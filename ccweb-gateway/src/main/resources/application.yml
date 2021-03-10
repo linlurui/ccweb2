@@ -1,0 +1,68 @@
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    database: 1
+  application:
+    # 应用名称
+    name: ccweb-gateway
+
+  zipkin: #分布式链路配置
+    base-url: http://localhost:9411
+
+logging:
+  level:
+    # log 级别
+    org.springframework.cloud.gateway: debug
+
+server:
+  port: 8999 #端口号
+  tomcat:
+    max-threads: 500000
+  servlet:
+    session:
+      timeout: 86000
+
+zuul:
+  sensitive-headers:
+  routes:
+    #标识你服务的名字，这里可以自己定义，一般方便和规范来讲还是跟自己服务的名字一样
+    ccait-ccweb:
+      #服务映射的路径，通过这路径就可以从外部访问你的服务了，目的是为了不爆露你机器的IP，面向服务的路由了，给你选一个可用的出来，
+      #这里zuul是自动依赖hystrix，ribbon的，不是面向单机
+      path: /ccweb/**
+      #这里一定要是你Eureka注册中心的服务的名称，是所以这里配置serviceId因为跟eureka结合了，如果单独使用zuul,那么就必须写自己机器的IP了，
+      #如url:http://localhost:8080/  这样的不好就是写死IP了，万一这IP挂了，这高可用性，服务注册那套东西就用不起来了
+      serviceId: CCAIT.CCWEB
+    ccait-ccweb-auth:
+      path: /auth/**
+      serviceId: CCAIT.CCWEB.AUTH
+
+  host:
+    socket-timeout-millis: 20000
+    connect-timeout-millis: 40000
+
+hystrix:
+  command:
+    default:  #default全局有效，service id指定应用有效
+      execution:
+        timeout:
+          #如果enabled设置为false，则请求超时交给ribbon控制,为true,则超时作为熔断根据
+          enabled: true
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000 #断路器超时时间，默认10000ms
+ribbon:
+  OkToRetryOnAllOperations: false #对所有操作请求都进行重试,默认false
+  ReadTimeout: 50000   #负载均衡超时时间，默认值5000
+  ConnectTimeout: 20000 #ribbon请求连接的超时时间，默认值20000
+  MaxAutoRetries: 0     #对当前实例的重试次数，默认0
+  MaxAutoRetriesNextServer: 1 #对切换实例的重试次数，默认1
+
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:9005/eureka/ #注册中心
+  instance:
+    instance-id: ccweb-gateway:8999

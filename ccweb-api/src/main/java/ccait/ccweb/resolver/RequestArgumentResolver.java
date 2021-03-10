@@ -1,0 +1,101 @@
+/**
+ *
+ *  License: http://www.apache.org/licenses/LICENSE-2.0
+ *  Home page: https://github.com/linlurui/ccweb
+ *  Note: to build on java, include the jdk1.8+ compiler symbol (and yes,
+ *  I know the difference between language and runtime versions; this is a compromise).
+ * @author linlurui
+ * @Date Date: 2019-02-10
+ */
+
+
+package ccait.ccweb.resolver;
+
+
+import ccait.ccweb.wrapper.CCWebRequestWrapper;
+import ccait.ccweb.model.UploadFileInfo;
+
+import entity.tool.util.JsonUtils;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.MethodParameter;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+
+@Configuration
+public class RequestArgumentResolver implements HandlerMethodArgumentResolver {
+
+    private static final Logger log = LoggerFactory.getLogger( RequestArgumentResolver.class );
+
+    @Override
+    public boolean supportsParameter(MethodParameter parameter) {
+        return parameter.hasParameterAnnotation(RequestBody.class);
+    }
+
+    @Override
+    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
+                                  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+
+        CCWebRequestWrapper requestWrapper = (CCWebRequestWrapper) ((ServletWebRequest) webRequest).getRequest();
+//        final String parameterJson = ((CCWebRequestWrapper) ((ServletWebRequest) webRequest).getRequest()).getRequestPostString();
+        final Type type = parameter.getGenericParameterType();
+        Class clazz = null;
+
+        if(requestWrapper.getUploadFileMap().size() > 0) {
+            Map<String, Object> parameters = (Map<String, Object>) requestWrapper.getParameters();
+            for(Map.Entry<String, UploadFileInfo> item : requestWrapper.getUploadFileMap().entrySet()) {
+                parameters.put(item.getKey(), item.getValue());
+            }
+
+            return parameters;
+        }
+
+        if(type.getTypeName().indexOf("List<") > 0) {
+            List parametes =(List) requestWrapper.getParameters();
+            List result = new ArrayList();
+            for(int i=0; i<parametes.size();i++) {
+                Type argType = ((ParameterizedTypeImpl) type).getActualTypeArguments()[0];
+                if(byte[].class.equals(argType)) {
+                    result.add(parametes.get(i));
+                }
+                else {
+                    Object obj = JsonUtils.convert(parametes.get(i), getClassByType(argType) );
+                    result.add(obj);
+                }
+            }
+
+            return result;
+        }
+
+        else {
+
+            clazz = getClassByType(type);
+        }
+
+
+        return JsonUtils.convert(requestWrapper.getParameters(), clazz);
+    }
+
+    public Class getClassByType(Type type) {
+        Class clazz;
+        if(type.getTypeName().indexOf("Map<") > 0) {
+            clazz = Map.class;
+        }
+        else {
+            clazz = (Class) type;
+        }
+        return clazz;
+    }
+}
