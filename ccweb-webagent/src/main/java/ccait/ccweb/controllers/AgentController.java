@@ -24,10 +24,8 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
-
 
 @RestController
 @RequestMapping( value = {"api/{datasource}"} )

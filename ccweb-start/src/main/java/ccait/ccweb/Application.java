@@ -24,7 +24,6 @@ import javax.annotation.PostConstruct;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 
-@EnableEurekaClient
 @ServletComponentScan
 @SpringBootApplication(scanBasePackages = {"ccait.ccweb"}, exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class} )
 public class Application extends SpringBootServletInitializer {
