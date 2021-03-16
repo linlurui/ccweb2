@@ -48,18 +48,24 @@
             </snapshots>
         </repository>
         <repository>
-            <id>ccweb</id>
-            <url>https://raw.github.com/linlurui/ccweb/2.0</url>
-            <snapshots>
+            <id>central</id>
+            <name>aliyun maven</name>
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+            <layout>default</layout>
+            <!-- 是否开启发布版构件下载 -->
+            <releases>
                 <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
+            </releases>
+            <!-- 是否开启快照版构件下载 -->
+            <snapshots>
+                <enabled>false</enabled>
             </snapshots>
         </repository>
     </repositories>
 
     <distributionManagement>
         <repository>
-            <id>gitee</id>
+            <id>ccweb</id>
             <url>file:${project.build.directory}/../deploy</url>
         </repository>
     </distributionManagement>
@@ -70,6 +76,53 @@
 <!--            <artifactId>jmimemagic</artifactId>-->
 <!--            <version>0.1.5</version>-->
 <!--        </dependency>-->
+        <dependency>
+            <groupId>ccait.cn</groupId>
+            <artifactId>ccweb-core</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/ccweb-core/2.0.0-SNAPSHOT/ccweb-core-2.0.0-20210310.091940-1.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>ccait.cn</groupId>
+            <artifactId>entity.queryable</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/entity.queryable/1.0.0-SNAPSHOT/entity.queryable-1.0.0-SNAPSHOT.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.davidmoten</groupId>
+            <artifactId>rxjava2-jdbc</artifactId>
+            <version>0.2.0</version><!--注意：0.2.0 以上版本连接池有问题，不能升版本-->
+            <exclusions>
+                <exclusion>
+                    <groupId>io.reactivex.rxjava2</groupId>
+                    <artifactId>rxjava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.reactivex.rxjava2</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>2.2.19</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.4.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -223,38 +276,38 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.1</version>
-                <configuration>
-                    <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/ccweb</altDeploymentRepository>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.github.github</groupId>
-                <artifactId>site-maven-plugin</artifactId>
-                <version >0.12</version>
-                <configuration>
-                    <message >Maven artifacts for ${project.version}</message>
-                    <noJekyll>true</noJekyll>
-                    <outputDirectory>${project.build.directory}/ccweb</outputDirectory><!--本地jar地址-->
-                    <branch>refs/heads/release2.0</branch><!--分支的名称-->
-                    <merge>true</merge>
-                    <includes>
-                        <include>**/*</include>
-                    </includes>
-                    <repositoryName>ccweb</repositoryName><!--对应github上创建的仓库名称 name-->
-                    <repositoryOwner>linlurui</repositoryOwner><!--github 仓库所有者即登录用户名-->
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>site</goal>
-                        </goals>
-                        <phase>deploy</phase>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <artifactId>maven-deploy-plugin</artifactId>-->
+<!--                <version>2.8</version>-->
+<!--                <configuration>-->
+<!--                    <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/ccweb</altDeploymentRepository>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--            <plugin>-->
+<!--                <groupId>com.github.github</groupId>-->
+<!--                <artifactId>site-maven-plugin</artifactId>-->
+<!--                <version >0.12</version>-->
+<!--                <configuration>-->
+<!--                    <message >Maven artifacts for ${project.version}</message>-->
+<!--                    <noJekyll>true</noJekyll>-->
+<!--                    <outputDirectory>${project.build.directory}/ccweb</outputDirectory>&lt;!&ndash;本地jar地址&ndash;&gt;-->
+<!--                    <branch>refs/heads/release2.0</branch>&lt;!&ndash;分支的名称&ndash;&gt;-->
+<!--                    <merge>true</merge>-->
+<!--                    <includes>-->
+<!--                        <include>**/*</include>-->
+<!--                    </includes>-->
+<!--                    <repositoryName>ccweb</repositoryName>&lt;!&ndash;对应github上创建的仓库名称 name&ndash;&gt;-->
+<!--                    <repositoryOwner>linlurui</repositoryOwner>&lt;!&ndash;github 仓库所有者即登录用户名&ndash;&gt;-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>site</goal>-->
+<!--                        </goals>-->
+<!--                        <phase>deploy</phase>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 </project>
