@@ -52,7 +52,7 @@ ccweb-start是ccweb的启动包，其中包含了springcloud的微服务组件�
 * ccweb-auth (用户鉴权功能包，分布式登录需搭载redis)
 * ccweb-iot (mqtt消息传输功能包，内置一个定阅器和一个简单的服务)
 * ccweb-config (分布式配置中心，可将每个服务的配置存至统一的数据库进行管理)
-* ccweb-logs (内置一个自定义的log4j过滤器)
+* ccweb-logs (一个基于kafka的分布式日志系统，如用作消息队列需要引用该项目做二次开发消费端)
 * ccweb-gateway（zuul网关）
 * ccweb-webagent（第三方平台接口转发功能包，可通过application.yml配置什么样的请求需要转发到第三方平台接口处理）
 
@@ -675,15 +675,25 @@ ccweb的二次开发实际就是自定义ccweb-start包的过程，springboot的
 ```xml
     <repositories>
         <repository>
-            <id>ccweb</id>
-            <url>https://raw.github.com/linlurui/ccweb/2.0</url>
-            <snapshots>
-                <enabled>true</enabled>
+            <id>ccweb2</id>
+            <url>https://gitee.com/ccait/ccweb2/raw/2.0</url>
+            <releases>
                 <updatePolicy>always</updatePolicy>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+                <enabled>true</enabled>
+                <checksumPolicy>fail</checksumPolicy>
             </snapshots>
         </repository>
     </repositories>
     <dependencies>
+        <dependency>
+            <groupId>ccait.cn</groupId>
+            <artifactId>ccweb-core</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>ccait.cn</groupId>
             <artifactId>ccweb-api</artifactId>

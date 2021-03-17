@@ -13,8 +13,8 @@ package ccait.ccweb.trigger;
 
 import ccait.ccweb.annotation.*;
 import ccait.ccweb.config.LangConfig;
-import ccait.ccweb.context.ApplicationContext;
-import ccait.ccweb.context.EntityContext;
+import ccait.ccweb.context.CCApplicationContext;
+import ccait.ccweb.context.CCEntityContext;
 import ccait.ccweb.enums.EncryptMode;
 import ccait.ccweb.utils.ClassUtils;
 import ccait.ccweb.wrapper.CCWebRequestWrapper;
@@ -88,7 +88,7 @@ public final class DefaultTrigger {
 
     @PostConstruct
     private void construct() {
-        datasourceId = (String) ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE);
+        datasourceId = (String) CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE);
         aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
         encoding = ApplicationConfig.getInstance().get("${entity.encoding}", encoding);
         createOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createOn}", createOnField);
@@ -101,12 +101,12 @@ public final class DefaultTrigger {
     @OnInsert
     public void onInsert(List<Map<String, Object>> list, HttpServletRequest request) throws Exception {
 
-        boolean hasCreateBy = EntityContext.hasColumn(datasourceId, EntityContext.getCurrentTable(), createByField);
-        boolean hasCreateOn = EntityContext.hasColumn(datasourceId, EntityContext.getCurrentTable(), createOnField);
-        boolean hasModifyByField = EntityContext.hasColumn(datasourceId, EntityContext.getCurrentTable(), modifyByField);
-        boolean hasModifyOnField = EntityContext.hasColumn(datasourceId, EntityContext.getCurrentTable(), modifyOnField);
+        boolean hasCreateBy = CCEntityContext.hasColumn(datasourceId, CCEntityContext.getCurrentTable(), createByField);
+        boolean hasCreateOn = CCEntityContext.hasColumn(datasourceId, CCEntityContext.getCurrentTable(), createOnField);
+        boolean hasModifyByField = CCEntityContext.hasColumn(datasourceId, CCEntityContext.getCurrentTable(), modifyByField);
+        boolean hasModifyOnField = CCEntityContext.hasColumn(datasourceId, CCEntityContext.getCurrentTable(), modifyOnField);
 
-        UserModel user = ApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+        UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
 
         if(user == null) {
             throw new HttpResponseException(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("login_please"));
@@ -146,7 +146,7 @@ public final class DefaultTrigger {
                         .getMap("entity.defaultValue").get(item.keySet())) ||
                         "UUID_RANDOM".equals(ApplicationConfig.getInstance()
                                 .getMap("entity.defaultValue")
-                                .get(String.format("%s.%s", EntityContext.getCurrentTable(), key))))
+                                .get(String.format("%s.%s", CCEntityContext.getCurrentTable(), key))))
                     item.put(key, UUID.randomUUID().toString().replace("-", ""));
             }
         }
@@ -171,10 +171,10 @@ public final class DefaultTrigger {
             data.remove(createByField);
         }
 
-        boolean hasModifyByField = EntityContext.hasColumn(datasourceId, EntityContext.getCurrentTable(), modifyByField);
-        boolean hasModifyOnField = EntityContext.hasColumn(datasourceId, EntityContext.getCurrentTable(), modifyOnField);
+        boolean hasModifyByField = CCEntityContext.hasColumn(datasourceId, CCEntityContext.getCurrentTable(), modifyByField);
+        boolean hasModifyOnField = CCEntityContext.hasColumn(datasourceId, CCEntityContext.getCurrentTable(), modifyOnField);
 
-        UserModel user = ApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+        UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
         if(user != null) {
             if(hasModifyByField) {
                 data.put(modifyByField, user.getUserId());
@@ -202,14 +202,14 @@ public final class DefaultTrigger {
     @OnBuildTable
     public void onBuild(List<ColumnInfo> columns, HttpServletRequest request) throws Exception {
 
-        Object entity = EntityContext.getEntity(EntityContext.getCurrentTable(), queryInfo);
+        Object entity = CCEntityContext.getEntity(CCEntityContext.getCurrentTable(), queryInfo);
         if(entity == null) {
             throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         Queryable query = (Queryable)entity;
 
-        if(Queryable.exist(query.dataSource().getId(), EntityContext.getCurrentTable())) {
+        if(Queryable.exist(query.dataSource().getId(), CCEntityContext.getCurrentTable())) {
             return;
         }
 
@@ -271,7 +271,7 @@ public final class DefaultTrigger {
             for(String key : data.keySet()){
                 Optional opt = map.keySet().stream()
                         .filter(a -> a.equals(key) ||
-                                String.format("%s.%s", EntityContext.getCurrentTable(), key).equals(a))
+                                String.format("%s.%s", CCEntityContext.getCurrentTable(), key).equals(a))
                         .findAny();
 
                 if(!opt.isPresent()){
@@ -309,7 +309,7 @@ public final class DefaultTrigger {
             for(ConditionInfo condition : queryInfo.getConditionList()){
                 Optional opt = map.keySet().stream()
                         .filter(a -> a.equals(condition.getName()) ||
-                                String.format("%s.%s", EntityContext.getCurrentTable(), condition.getName()).equals(a))
+                                String.format("%s.%s", CCEntityContext.getCurrentTable(), condition.getName()).equals(a))
                         .findAny();
 
                 if(opt.isPresent() && !Pattern.matches(opt.get().toString(), condition.getValue().toString())){
@@ -357,7 +357,7 @@ public final class DefaultTrigger {
                 }
                 List<String> keyList = (List<String>) list.get(i).keySet().stream().map(a->a!=null ? a.toString() : "").collect(Collectors.toList());
                 for(Object key : keyList) {
-                    if(ApplicationConfig.getInstance().get(String.format("${entity.table.display.%s.%s}", EntityContext.getCurrentTable(), key.toString())).equals("hidden")) {
+                    if(ApplicationConfig.getInstance().get(String.format("${entity.table.display.%s.%s}", CCEntityContext.getCurrentTable(), key.toString())).equals("hidden")) {
                         list.get(i).remove(key);
                     }
 
@@ -373,13 +373,13 @@ public final class DefaultTrigger {
                     }
 
                     else if(base64FieldList != null && base64FieldList.size() > 0 && base64FieldList.stream()
-                            .allMatch(a -> a.equalsIgnoreCase(key.toString()) || a.equalsIgnoreCase(String.join(".", EntityContext.getCurrentTable(), key.toString())))) {
+                            .allMatch(a -> a.equalsIgnoreCase(key.toString()) || a.equalsIgnoreCase(String.join(".", CCEntityContext.getCurrentTable(), key.toString())))) {
                         String value = encrypt(list.get(i).get(key).toString(), EncryptMode.BASE64, encoding);
                         list.get(i).put(key, value);
                     }
 
                     else if(aesFieldList != null && aesFieldList.size() > 0 && aesFieldList.stream()
-                            .allMatch(a -> a.equalsIgnoreCase(key.toString()) || a.equalsIgnoreCase(String.join(".", EntityContext.getCurrentTable(), key.toString())))) {
+                            .allMatch(a -> a.equalsIgnoreCase(key.toString()) || a.equalsIgnoreCase(String.join(".", CCEntityContext.getCurrentTable(), key.toString())))) {
                         String value = encrypt(list.get(i).get(key).toString(), EncryptMode.AES, aesPublicKey);
                         list.get(i).put(key, value);
                     }

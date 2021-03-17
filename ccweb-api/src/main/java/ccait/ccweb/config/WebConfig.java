@@ -11,7 +11,8 @@
 
 package ccait.ccweb.config;
 
-import ccait.ccweb.context.EntityContext;
+import ccait.ccweb.context.CCEntityContext;
+import ccait.ccweb.context.CCTriggerContext;
 import ccait.ccweb.converter.FastJsonConverter;
 import ccait.ccweb.filter.RequestFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
@@ -73,11 +74,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("POST", "GET", "PUT", "OPTIONS", "DELETE")
                 .maxAge(5555)
                 .allowCredentials(true);
-    }
-
-    @Bean
-    public EntityContext entityContext() {
-        return new EntityContext();
     }
 
     @Bean

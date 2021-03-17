@@ -10,8 +10,8 @@
 
 package ccait.ccweb.mqtt;
 
-import ccait.ccweb.context.ApplicationContext;
-import ccait.ccweb.context.EntityContext;
+import ccait.ccweb.context.CCApplicationContext;
+import ccait.ccweb.context.CCEntityContext;
 import ccait.ccweb.utils.EncryptionUtil;
 import entity.query.ColumnInfo;
 import entity.query.Queryable;
@@ -93,15 +93,15 @@ public class CcwebMqttCallback implements MqttCallback {
             data.put(createByField, userid);
             data.put("topic_name", topic);
             List<ColumnInfo> cloumns = null;
-            if(ApplicationContext.existTable(datasource, table)) {
-                cloumns = ApplicationContext.ensureColumns(datasource, table, data);
+            if(CCApplicationContext.existTable(datasource, table)) {
+                cloumns = CCApplicationContext.ensureColumns(datasource, table, data);
             }
             else {
-                cloumns = ApplicationContext.ensureTable(data, datasource, table);
+                cloumns = CCApplicationContext.ensureTable(data, datasource, table);
             }
 
             List<String> fieldList = cloumns.stream().map(a->a.getColumnName()).collect(Collectors.toList());
-            Queryable entity = (Queryable) EntityContext.getEntity(table, fieldList);
+            Queryable entity = (Queryable) CCEntityContext.getEntity(table, fieldList);
             entity.insert();
 
         } catch (Exception e) {

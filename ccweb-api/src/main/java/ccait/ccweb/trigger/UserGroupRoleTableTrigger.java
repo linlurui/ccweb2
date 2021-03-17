@@ -14,7 +14,7 @@ package ccait.ccweb.trigger;
 
 import ccait.ccweb.annotation.Trigger;
 import ccait.ccweb.config.LangConfig;
-import ccait.ccweb.context.ApplicationContext;
+import ccait.ccweb.context.CCApplicationContext;
 import ccait.ccweb.context.ITrigger;
 import ccait.ccweb.context.UserContext;
 import ccait.ccweb.enums.EncryptMode;
@@ -90,7 +90,7 @@ public final class UserGroupRoleTableTrigger implements ITrigger {
                 throw new Exception(LangConfig.getInstance().get("set_value_by_userId_please"));
             }
 
-            UserModel user = ApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+            UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
             if(user == null) {
                 throw new Exception(LangConfig.getInstance().get("login_please"));
             }

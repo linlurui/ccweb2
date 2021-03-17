@@ -1,6 +1,6 @@
 package ccait.ccweb.processor;
 
-import ccait.ccweb.context.ApplicationContext;
+import ccait.ccweb.context.CCApplicationContext;
 import ccait.ccweb.entites.AppConfig;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -166,7 +166,7 @@ public class ApplicationConfigProcessor implements EnvironmentPostProcessor {
     private void ensureConfigTable(String configTable) throws Exception {
         log.info("ensure config table!!!");
         List<String> tables = null;
-        DataSource ds = ApplicationContext.getDefaultDataSource(null);
+        DataSource ds = CCApplicationContext.getDefaultDataSource(null);
         if(StringUtils.isEmpty(ds.getId())) {
             return;
         }
@@ -205,7 +205,7 @@ public class ApplicationConfigProcessor implements EnvironmentPostProcessor {
             }});
 
             log.info(ds.getId()+ "." + configTable + " has been creating!!!");
-            if(!ApplicationContext.existTable(ds.getId(), configTable)) {
+            if(!CCApplicationContext.existTable(ds.getId(), configTable)) {
                 Queryable.createTable(ds.getId(), configTable, columns);
             }
         }

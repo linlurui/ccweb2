@@ -54,6 +54,7 @@ import javax.servlet.ServletOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -75,9 +76,9 @@ public abstract class BaseController extends AbstractWebController {
     }
 
     protected void download(String table, String field, String id) throws Exception {
-        ccait.ccweb.model.DownloadData downloadData = new BaseController.DownloadData(EntityContext.getCurrentDatasourceId(), table, field, id).invoke();
+        ccait.ccweb.model.DownloadData downloadData = new BaseController.DownloadData(CCEntityContext.getCurrentDatasourceId(), table, field, id).invoke();
 
-        TriggerContext.exec(table, EventType.Download, downloadData, request);
+        CCTriggerContext.exec(table, EventType.Download, downloadData, request);
 
         byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType());
 
@@ -113,9 +114,9 @@ public abstract class BaseController extends AbstractWebController {
     }
 
     protected Mono downloadAs(String table, String field, String id) throws Exception {
-        ccait.ccweb.model.DownloadData downloadData = new DownloadData(EntityContext.getCurrentDatasourceId(), table, field, id).invoke();
+        ccait.ccweb.model.DownloadData downloadData = new DownloadData(CCEntityContext.getCurrentDatasourceId(), table, field, id).invoke();
 
-        TriggerContext.exec(table, EventType.Download, downloadData, request);
+        CCTriggerContext.exec(table, EventType.Download, downloadData, request);
 
         byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType());
 
@@ -135,7 +136,7 @@ public abstract class BaseController extends AbstractWebController {
 
         List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
 
-        Object entity = DynamicClassBuilder.create(EntityContext.getCurrentTable(), columns);
+        Object entity = DynamicClassBuilder.create(CCEntityContext.getCurrentTable(), columns);
 
         filename = filename + ExcelTypeEnum.XLSX.getValue();
 
@@ -153,9 +154,9 @@ public abstract class BaseController extends AbstractWebController {
     }
 
     protected void preview(String table, String field, String id, Integer page) throws Exception {
-        ccait.ccweb.model.DownloadData downloadData = new DownloadData(EntityContext.getCurrentDatasourceId(), table, field, id, page).invoke();
+        ccait.ccweb.model.DownloadData downloadData = new DownloadData(CCEntityContext.getCurrentDatasourceId(), table, field, id, page).invoke();
 
-        TriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
+        CCTriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
 
         byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType());
 
@@ -172,12 +173,12 @@ public abstract class BaseController extends AbstractWebController {
     }
 
     protected Mono previewAs(String table, String field, String id, Integer page) throws Exception {
-        ccait.ccweb.model.DownloadData downloadData = new DownloadData(EntityContext.getCurrentDatasourceId(), table, field, id, page).invoke();
+        ccait.ccweb.model.DownloadData downloadData = new DownloadData(CCEntityContext.getCurrentDatasourceId(), table, field, id, page).invoke();
         if(downloadData.getMimeType().indexOf("image") != 0) {
             throw new  Exception(LangConfig.getInstance().get("not_support_file_format"));
         }
 
-        TriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
+        CCTriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
 
         byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType());
 
@@ -313,14 +314,14 @@ public abstract class BaseController extends AbstractWebController {
             throw new IOException(LangConfig.getInstance().get("login_please"));
         }
 
-        List<ColumnInfo> columns = Queryable.getColumns(EntityContext.getCurrentDatasourceId(), table);
+        List<ColumnInfo> columns = Queryable.getColumns(CCEntityContext.getCurrentDatasourceId(), table);
         if(!columns.stream().filter(a->a.getColumnName().equals(field)).findAny().isPresent()) {
             throw new IOException(LangConfig.getInstance().get("invalid_table_or_field"));
         }
 
         String currentDatasource = "default";
-        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
-            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
+        if(CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
+            currentDatasource = CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
         }
 
         Map<String, Object> configMap = ApplicationConfig.getInstance().getMap(String.format("entity.upload.%s.%s.%s", currentDatasource, table, field));
@@ -422,8 +423,8 @@ public abstract class BaseController extends AbstractWebController {
         }
 
         String currentDatasource = "default";
-        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
-            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
+        if(CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
+            currentDatasource = CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
         }
 
         for(Map.Entry<String, Object> fileEntry : uploadFiles.entrySet()) {
@@ -462,7 +463,7 @@ public abstract class BaseController extends AbstractWebController {
             List<String> fieldList = new ArrayList<String>();
             List<SheetHeaderModel> headerList = OfficeUtils.getHeadersByExcel(fileBytes, fieldList);
 
-            Queryable entity = (Queryable) EntityContext.getEntity(table, fieldList);
+            Queryable entity = (Queryable) CCEntityContext.getEntity(table, fieldList);
 
             EasyExcel.read(new ByteArrayInputStream(fileBytes), entity.getClass(), new ExcelListener(table, entity, headerList)).sheet().doRead();
         }
@@ -493,8 +494,8 @@ public abstract class BaseController extends AbstractWebController {
                 .isParallel();
 
         String currentDatasource = "default";
-        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
-            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
+        if(CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
+            currentDatasource = CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
         }
 
         Map<String, Object> fieldSet = new HashMap<String, Object>();
@@ -571,7 +572,7 @@ public abstract class BaseController extends AbstractWebController {
         }
 
         //保存到数据库
-        Queryable query = (Queryable)EntityContext.getEntity(table, fields);
+        Queryable query = (Queryable)CCEntityContext.getEntity(table, fields);
         for(Map<String, Object> item : resultSet) {
             for(String field : item.keySet()) {
                 if(item.get(field) == null) {
@@ -586,7 +587,7 @@ public abstract class BaseController extends AbstractWebController {
                 ReflectionUtils.setFieldValue(query, field, fieldSet.get(field));
             }
             Integer id = query.insert();
-            ApplicationContext.setGroupsUserIdValue(request, table, item, getLoginUser(), id);
+            CCApplicationContext.setGroupsUserIdValue(request, table, item, getLoginUser(), id);
         }
 
         return resultSet;
@@ -594,7 +595,7 @@ public abstract class BaseController extends AbstractWebController {
 
     protected void playVideo(String table, String field, String id) throws Exception {
 
-        String currentDatasource = EntityContext.getCurrentDatasourceId();
+        String currentDatasource = CCEntityContext.getCurrentDatasourceId();
         Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(
                 String.format("entity.upload.%s.%s.%s", currentDatasource, table, field)
         );
@@ -618,7 +619,7 @@ public abstract class BaseController extends AbstractWebController {
         decrypt(data);
 
         String content = data.get(field).toString();
-        DownloadData downloadData = new DownloadData(EntityContext.getCurrentDatasourceId(), table, field, id);
+        DownloadData downloadData = new DownloadData(CCEntityContext.getCurrentDatasourceId(), table, field, id);
         String filePath = downloadData.getFullPath(content, uploadConfigMap);
         if(!(new File(filePath)).exists()) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -626,7 +627,7 @@ public abstract class BaseController extends AbstractWebController {
             return;
         }
 
-        TriggerContext.exec(table, EventType.PlayVideo, downloadData, request);
+        CCTriggerContext.exec(table, EventType.PlayVideo, downloadData, request);
 
         if (!StringUtils.isEmpty(downloadData.getMediaType().getType())) {
             response.setContentType(downloadData.getMediaType().getType());

@@ -14,7 +14,7 @@ package ccait.ccweb.interceptors;
 import ccait.ccweb.abstracts.AbstractPermissionInterceptor;
 import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.config.LangConfig;
-import ccait.ccweb.context.ApplicationContext;
+import ccait.ccweb.context.CCApplicationContext;
 import ccait.ccweb.context.UserContext;
 import ccait.ccweb.entites.QueryInfo;
 import ccait.ccweb.enums.PrivilegeScope;
@@ -203,16 +203,16 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
     private Boolean canAccessTable(String method, CCWebRequestWrapper request, HttpServletResponse response, AccessCtrl requiredPermission, Map<String, String> attrs, String table) throws Exception {
 
         if(requiredPermission == null) {
-            ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
+            CCApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
             return true;
         }
 
         // session 中获取该用户的权限信息 并判断是否有权限
-        UserModel user = ApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+        UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
 
         if( user != null && user.getUsername().equals(admin) ) { //超级管理员
             log.info(String.format(LOG_PRE_SUFFIX + "超级管理员访问表[%s]，操作：%s！", table, method));
-            ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
+            CCApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
             return true;
         }
 
@@ -232,9 +232,9 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
                     !request.getRequestURI().endsWith("/import"))) {
                 log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，允许查询！", table));
 
-                if(!ApplicationContext.getThreadLocalMap().containsKey(CURRENT_MAX_PRIVILEGE_SCOPE) ||
-                        PrivilegeScope.DENIED.equals(ApplicationContext.getThreadLocalMap().get(CURRENT_MAX_PRIVILEGE_SCOPE))) {
-                    ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
+                if(!CCApplicationContext.getThreadLocalMap().containsKey(CURRENT_MAX_PRIVILEGE_SCOPE) ||
+                        PrivilegeScope.DENIED.equals(CCApplicationContext.getThreadLocalMap().get(CURRENT_MAX_PRIVILEGE_SCOPE))) {
+                    CCApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
                 }
 
                 return true;
@@ -456,7 +456,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
             }
         }
 
-        ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, currentMaxScope);
+        CCApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, currentMaxScope);
 
         return  result;
     }
@@ -549,7 +549,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
         }
 
         hasUploadFile = true;
-        ApplicationContext.getThreadLocalMap().put(HAS_UPLOAD_FILE, true);
+        CCApplicationContext.getThreadLocalMap().put(HAS_UPLOAD_FILE, true);
 
         if(request.getRequestURI().toLowerCase().endsWith("/import") ||
                 request.getRequestURI().toLowerCase().endsWith("/upload")) { //上传和导入接口不校验
@@ -558,8 +558,8 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
         }
 
         String currentDatasource = "default";
-        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
-            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
+        if(CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
+            currentDatasource = CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
         }
 
         Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(String.format("entity.upload.%s.%s", currentDatasource, table));

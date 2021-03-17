@@ -14,11 +14,8 @@ import entity.query.core.ApplicationConfig;
 import entity.tool.util.StringUtils;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11NioProtocol;
-import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
-import org.apache.logging.log4j.core.config.ConfigurationSource;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -34,7 +31,6 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.*;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 
 
 //@EnableHystrixDashboard
@@ -44,7 +40,7 @@ import java.net.URISyntaxException;
 //@EnableZuulProxy
 //@EnableEurekaClient
 @ServletComponentScan
-@SpringBootApplication( exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class} )
+@SpringBootApplication( scanBasePackages = {"ccait.ccweb"}, exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class} )
 public class CcwebAppliction  implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
 
     private static final Logger log = LoggerFactory.getLogger( CcwebAppliction.class );
@@ -81,82 +77,82 @@ public class CcwebAppliction  implements WebServerFactoryCustomizer<Configurable
     }
 
     private static void initLogConfig() throws FileNotFoundException {
-        String path = null;
-        File file = null;
-
-        if(file==null || !file.exists()) {
-            if(StringUtils.isNotEmpty(ApplicationConfig.getInstance().get("${log4j.config.path}"))) {
-                String logConfigPath = System.getProperty("user.dir") + "/" +
-                        ApplicationConfig.getInstance().get("${log4j.config.path}");
-
-                if(StringUtils.isNotEmpty(logConfigPath)) {
-                    file = new File(logConfigPath);
-                }
-            }
-        }
-
-        if(!file.exists()) {
-            try {
-                path = Thread.currentThread().getContextClassLoader()
-                        .getResource(ApplicationConfig.getInstance()
-                                .get("${log4j.config.path}")).toURI().getPath();
-
-                if(StringUtils.isNotEmpty(path)) {
-                    file = new File(path);
-                }
-            } catch (URISyntaxException e) {
-                System.out.println("URISyntaxException message=======>" + e.getMessage());
-            }
-        }
-
-        String property = System.getProperty("catalina.home");
-        if(!file.exists()) {
-            path =property + File.separator + "conf" + File.separator + "log4j2.xml";
-            if(StringUtils.isNotEmpty(path)) {
-                file = new File(path);
-            }
-        }
-
-        if(!file.exists()) {
-            path = property + File.separator + "config" + File.separator + "log4j2.xml";
-            file = new File(path);
-        }
-
-        if(!file.exists()) {
-            path = property + File.separator + "log4j2.xml";
-            file = new File(path);
-        }
-
-        if(!file.exists()) {
-            path = System.getProperty("user.dir") + "/log4j2.xml";
-            file = new File(path);
-        }
-
-        if(!file.exists()) {
-            path = System.getProperty("user.dir") + "/config/log4j2.xml";
-            file = new File(path);
-        }
-
-        if(!file.exists()) {
-            path = System.getProperty("user.dir") + "/conf/log4j2.xml";
-            file = new File(path);
-        }
-
-        if(file.exists() && StringUtils.isNotEmpty(path)) {
-
-            PropertyConfigurator.configure(path);
-
-            if(file.exists()) {
-
-                ConfigurationSource source = new ConfigurationSource(new FileInputStream(path), file);
-
-                if (source != null) {
-                    Configurator.initialize(null, source);
-                }
-            }
-
-            System.out.println("Current log4j path: " + path);
-        }
+//        String path = null;
+//        File file = null;
+//
+//        if(file==null || !file.exists()) {
+//            if(StringUtils.isNotEmpty(ApplicationConfig.getInstance().get("${log4j.config.path}"))) {
+//                String logConfigPath = System.getProperty("user.dir") + "/" +
+//                        ApplicationConfig.getInstance().get("${log4j.config.path}");
+//
+//                if(StringUtils.isNotEmpty(logConfigPath)) {
+//                    file = new File(logConfigPath);
+//                }
+//            }
+//        }
+//
+//        if(!file.exists()) {
+//            try {
+//                path = Thread.currentThread().getContextClassLoader()
+//                        .getResource(ApplicationConfig.getInstance()
+//                                .get("${log4j.config.path}")).toURI().getPath();
+//
+//                if(StringUtils.isNotEmpty(path)) {
+//                    file = new File(path);
+//                }
+//            } catch (URISyntaxException e) {
+//                System.out.println("URISyntaxException message=======>" + e.getMessage());
+//            }
+//        }
+//
+//        String property = System.getProperty("catalina.home");
+//        if(!file.exists()) {
+//            path =property + File.separator + "conf" + File.separator + "log4j2.xml";
+//            if(StringUtils.isNotEmpty(path)) {
+//                file = new File(path);
+//            }
+//        }
+//
+//        if(!file.exists()) {
+//            path = property + File.separator + "config" + File.separator + "log4j2.xml";
+//            file = new File(path);
+//        }
+//
+//        if(!file.exists()) {
+//            path = property + File.separator + "log4j2.xml";
+//            file = new File(path);
+//        }
+//
+//        if(!file.exists()) {
+//            path = System.getProperty("user.dir") + "/log4j2.xml";
+//            file = new File(path);
+//        }
+//
+//        if(!file.exists()) {
+//            path = System.getProperty("user.dir") + "/config/log4j2.xml";
+//            file = new File(path);
+//        }
+//
+//        if(!file.exists()) {
+//            path = System.getProperty("user.dir") + "/conf/log4j2.xml";
+//            file = new File(path);
+//        }
+//
+//        if(file.exists() && StringUtils.isNotEmpty(path)) {
+//
+//            PropertyConfigurator.configure(path);
+//
+//            if(file.exists()) {
+//
+//                ConfigurationSource source = new ConfigurationSource(new FileInputStream(path), file);
+//
+//                if (source != null) {
+//                    Configurator.initialize(null, source);
+//                }
+//            }
+//
+//            System.out.println("Current log4j path: " + path);
+//        }
     }
 
     @Bean

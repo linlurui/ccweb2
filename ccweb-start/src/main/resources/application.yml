@@ -33,28 +33,62 @@ spring:
   resources: #修改默认的静态寻址资源目录
     static-locations: classpath:/templates/,classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/
 
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092 #指定kafka server的地址，集群配多个，中间，逗号隔开
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: default_consumer_group #群组ID
+      enable-auto-commit: true
+      auto-commit-interval: 1000
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 
 # 2.SpringCloud配置
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:9005/eureka/ #注册中心
+    register-with-eureka: false
+    fetch-registry: false
   instance:
-    instance-id: ccweb-auth:8000
+    instance-id: ccweb-start:8000
 
 feign:
   hystrix:
     enabled: true
 
 
-# 3.log4j配置
-log4j:
-  config:
-    path: log4j2.xml #日志配置路径，可选
-  logger:
-    org:
-      springframework:
-        cloud: OFF
+# 3.logging配置
+logging:
+  config: classpath:logback-spring.xml
+  kafka:
+    enabled: false
+    #多个broker用英文逗号分隔
+    broker: 127.0.0.1:9092
+    #创建Kafka的topic时使用
+    env: test
+  level:
+    com:
+      netflix:
+        discovery:
+          DiscoveryClient: OFF
+          InstanceInfoReplicato: OFF
+      alibaba:
+        druid:
+          pool:
+            DruidPooledPreparedStatement: OFF
+      sun:
+        jersey:
+          client: OFF
+    netflix:
+      discovery:
+        shared:
+          transport:
+            jersey:
+              AbstractJerseyEurekaHttpClient: OFF
 
 
 # 4.websocket配置

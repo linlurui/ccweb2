@@ -3,8 +3,8 @@ package ccait.ccweb.controllers;
 import ccait.ccweb.RestAgent;
 import ccait.ccweb.abstracts.AbstractWebController;
 import ccait.ccweb.config.LangConfig;
-import ccait.ccweb.context.ApplicationContext;
-import ccait.ccweb.context.EntityContext;
+import ccait.ccweb.context.CCApplicationContext;
+import ccait.ccweb.context.CCEntityContext;
 import ccait.ccweb.entites.ConditionInfo;
 import ccait.ccweb.entites.PlatformInfo;
 import ccait.ccweb.entites.QueryInfo;
@@ -24,8 +24,10 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
+
 
 @RestController
 @RequestMapping( value = {"api/{datasource}"} )
@@ -217,11 +219,11 @@ public class AgentController extends AbstractWebController {
                 }
 
                 if(platformInfo.isEnsureTable()) {
-                    if(!ApplicationContext.existTable(table)) {
-                        ApplicationContext.ensureTable(postData, rest.getAgentProfile().getUniqueList(), table);
+                    if(!CCApplicationContext.existTable(table)) {
+                        CCApplicationContext.ensureTable(postData, rest.getAgentProfile().getUniqueList(), table);
                     }
                     else {
-                        ApplicationContext.ensureColumns(postData, rest.getAgentProfile().getUniqueList());
+                        CCApplicationContext.ensureColumns(postData, rest.getAgentProfile().getUniqueList());
                     }
                 }
 
@@ -260,7 +262,7 @@ public class AgentController extends AbstractWebController {
         pageInfo.setPageSize(1);
         pageInfo.setPageIndex(1);
         exp.setPageInfo(pageInfo);
-        List<Map> dataList = query(EntityContext.getCurrentTable(), exp);
+        List<Map> dataList = query(CCEntityContext.getCurrentTable(), exp);
         if(dataList.size()==0) {
             return null;
         }
@@ -272,7 +274,7 @@ public class AgentController extends AbstractWebController {
         response.flushBuffer();
         PrintWriter writer = response.getWriter();
         writer.close();
-        ApplicationContext.getThreadLocalMap().put(StaticVars.RESPONSE_END, true);
+        CCApplicationContext.getThreadLocalMap().put(StaticVars.RESPONSE_END, true);
     }
 
     public void write(List<ResponseData> responseList) throws IOException {

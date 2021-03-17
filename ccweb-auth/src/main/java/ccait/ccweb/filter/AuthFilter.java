@@ -11,7 +11,7 @@
 
 package ccait.ccweb.filter;
 
-import ccait.ccweb.context.ApplicationContext;
+import ccait.ccweb.context.CCApplicationContext;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.NetworkUtils;
 import ccait.ccweb.wrapper.CCWebRequestWrapper;
@@ -134,7 +134,7 @@ public class AuthFilter implements WebFilter, Filter {
             res.getWriter().close();
         }
         finally {
-            ApplicationContext.dispose();
+            CCApplicationContext.dispose();
         }
     }
 

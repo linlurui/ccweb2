@@ -47,14 +47,9 @@ feign:
     enabled: true
 
 
-# 3.log4j配置
-log4j:
-  config:
-    path: log4j2.xml #日志配置路径，可选
-  logger:
-    org:
-      springframework:
-        cloud: OFF
+# 3.logging配置
+logging:
+  config: classpath:logback-spring.xml
 
 
 # 4.websocket配置

@@ -15,13 +15,22 @@
 
 
     <dependencies>
+        <!-- 将日志输出到Kafka -->
         <dependency>
-            <groupId>ccait.cn</groupId>
-            <artifactId>ccweb-core</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../lib/ccweb-core/2.0.0-SNAPSHOT/ccweb-core-2.0.0-20210310.091940-1.jar</systemPath>
+            <groupId>com.github.danielwegener</groupId>
+            <artifactId>logback-kafka-appender</artifactId>
+            <version>${logback-kafka-appender.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
     </dependencies>
 </project>

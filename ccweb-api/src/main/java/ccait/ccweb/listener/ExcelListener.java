@@ -19,12 +19,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ccait.ccweb.context.EntityContext;
+import ccait.ccweb.context.CCEntityContext;
 import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EncryptMode;
 import ccait.ccweb.model.SheetHeaderModel;
 import ccait.ccweb.utils.EncryptionUtil;
-import ccait.ccweb.context.ApplicationContext;
+import ccait.ccweb.context.CCApplicationContext;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import entity.query.ColumnInfo;
 import entity.query.Queryable;
@@ -80,12 +80,12 @@ public class ExcelListener extends AnalysisEventListener<Object> {
         aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}");
         encoding = ApplicationConfig.getInstance().get("${entity.encoding}");
 
-        List<ColumnInfo> cloumns = ApplicationContext.convertToColumnInfos(headerList);
-        if(!ApplicationContext.existTable(tablename)) {
-            ApplicationContext.ensureTable(EntityContext.getCurrentDatasourceId(), tablename, cloumns);
+        List<ColumnInfo> cloumns = CCApplicationContext.convertToColumnInfos(headerList);
+        if(!CCApplicationContext.existTable(tablename)) {
+            CCApplicationContext.ensureTable(CCEntityContext.getCurrentDatasourceId(), tablename, cloumns);
         }
         else {
-            ApplicationContext.ensureColumns(EntityContext.getCurrentDatasourceId(), tablename, null, cloumns);
+            CCApplicationContext.ensureColumns(CCEntityContext.getCurrentDatasourceId(), tablename, null, cloumns);
         }
     }
 

@@ -12,8 +12,8 @@ package ccait.ccweb.trigger;
 
 import ccait.ccweb.RestAgent;
 import ccait.ccweb.annotation.*;
-import ccait.ccweb.context.ApplicationContext;
-import ccait.ccweb.context.EntityContext;
+import ccait.ccweb.context.CCApplicationContext;
+import ccait.ccweb.context.CCEntityContext;
 import ccait.ccweb.entites.ConditionInfo;
 import ccait.ccweb.entites.PlatformInfo;
 import ccait.ccweb.entites.QueryInfo;
@@ -102,8 +102,8 @@ public class AgentTrigger {
             return;
         }
 
-        String table = EntityContext.getCurrentTable();
-        UserModel user = ApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+        String table = CCEntityContext.getCurrentTable();
+        UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
         List<ResponseData> responseList = new ArrayList<>();
 
         Map returnData = null;
@@ -146,11 +146,11 @@ public class AgentTrigger {
                     result.put(modifyOnField, Datetime.now());
 
                     if(platformInfo.isEnsureTable()) {
-                        if(!ApplicationContext.existTable(table)) {
-                            ApplicationContext.ensureTable(result, rest.getAgentProfile().getUniqueList(), table);
+                        if(!CCApplicationContext.existTable(table)) {
+                            CCApplicationContext.ensureTable(result, rest.getAgentProfile().getUniqueList(), table);
                         }
                         else {
-                            ApplicationContext.ensureColumns(result, rest.getAgentProfile().getUniqueList());
+                            CCApplicationContext.ensureColumns(result, rest.getAgentProfile().getUniqueList());
                         }
                     }
                     returnData = JsonUtils.convert(result, Map.class);
@@ -211,8 +211,8 @@ public class AgentTrigger {
         }
 
         List<ResponseData> responseList = new ArrayList<>();
-        String table = EntityContext.getCurrentTable();
-        UserModel user = ApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+        String table = CCEntityContext.getCurrentTable();
+        UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
         Map attr = (Map)request.getAttribute(StaticVars.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
         if(!attr.containsKey("id")) {
             return;
@@ -271,7 +271,7 @@ public class AgentTrigger {
 
                 Map returnData = JsonUtils.convert(result, Map.class);
                 if(platformInfo.isEnsureTable()) {
-                    ApplicationContext.ensureColumns(result);
+                    CCApplicationContext.ensureColumns(result);
                 }
                 agentController.update(table, data.get("id").toString(), result);
                 success(responseList, returnData);
@@ -297,9 +297,9 @@ public class AgentTrigger {
             return;
         }
 
-        UserModel user = ApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+        UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
         List<ResponseData> responseList = new ArrayList<>();
-        String table = EntityContext.getCurrentTable();
+        String table = CCEntityContext.getCurrentTable();
 
         int continueCount = 0;
         for (Map.Entry<String, Object> platformProfile : agentProfile.entrySet()) {
@@ -372,8 +372,8 @@ public class AgentTrigger {
         }
 
         List<ResponseData> responseList = new ArrayList<>();
-        String table = EntityContext.getCurrentTable();
-        UserModel user = ApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+        String table = CCEntityContext.getCurrentTable();
+        UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
 
         int continueCount = 0;
         for (Map.Entry<String, Object> platformProfile : agentProfile.entrySet()) {
@@ -440,10 +440,10 @@ public class AgentTrigger {
         if(isCancel(request) || !hasAgentNode) {
             return;
         }
-        UserModel user = ApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+        UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
 
         List<ResponseData> responseList = new ArrayList<>();
-        String table = EntityContext.getCurrentTable();
+        String table = CCEntityContext.getCurrentTable();
         int continueCount = 0;
         for (Map.Entry<String, Object> platformProfile : agentProfile.entrySet()) {
             Map<String, Map> profile = (Map) platformProfile.getValue();

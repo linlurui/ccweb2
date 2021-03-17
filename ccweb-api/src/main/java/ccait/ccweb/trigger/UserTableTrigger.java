@@ -14,7 +14,7 @@ package ccait.ccweb.trigger;
 
 import ccait.ccweb.annotation.Trigger;
 import ccait.ccweb.config.LangConfig;
-import ccait.ccweb.context.ApplicationContext;
+import ccait.ccweb.context.CCApplicationContext;
 import ccait.ccweb.context.ITrigger;
 import ccait.ccweb.model.DownloadData;
 import ccait.ccweb.utils.EncryptionUtil;
@@ -145,7 +145,7 @@ public final class UserTableTrigger implements ITrigger {
     @Override
     public void onDelete(String id, HttpServletRequest request) throws Exception {
 
-        UserModel user = ApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+        UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
         if(user == null) {
             return;
         }
