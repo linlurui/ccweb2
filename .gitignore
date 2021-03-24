@@ -26,3 +26,9 @@ release/conf
 /release/conf
 */release/conf
 **/release/conf
+ccweb-core
+allatori
+entityqueryable
+ccweb-start-2.0.0-SNAPSHOT.jar
+*/ccweb-start-2.0.0-SNAPSHOT.jar
+**/ccweb-start-2.0.0-SNAPSHOT.jar

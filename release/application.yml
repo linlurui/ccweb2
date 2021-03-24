@@ -86,7 +86,7 @@ mqtt:
 entity:
   lang: cn
   account: ccait.cn
-  license: 02170C1652122F01A9D650EC3C85CDFE
+  license: B80F581FCE37105D833B371B1CB6B9B0C73CC024B11613EE97E405B3FE56B6C9
   datasource:
     activated: sqlite #可通过url的{datasource}参数访问到该数据库，没有在此设置的environment不能通过url访问到
     #configFile: db-config.xml #数据库配置路径

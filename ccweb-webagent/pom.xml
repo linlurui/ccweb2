@@ -12,6 +12,10 @@
     <artifactId>ccweb-webagent</artifactId>
 
     <dependencies>
-
+        <dependency>
+            <groupId>ccait.cn</groupId>
+            <artifactId>ccweb-core</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

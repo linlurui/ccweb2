@@ -15,6 +15,7 @@ import ccait.ccweb.abstracts.AbstractWebController;
 import ccait.ccweb.context.UserContext;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.model.UserModel;
+import ccait.ccweb.repo.CCRepository;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.JsonUtils;
 import entity.tool.util.RequestUtils;
@@ -93,7 +94,6 @@ public class AuthController extends AbstractWebController {
     @RequestMapping( value = "login", method = RequestMethod.POST  )
     public ResponseData userLogin(@RequestBody UserModel user) {
         try {
-
             user = this.login(user);
 
             return success(user);
