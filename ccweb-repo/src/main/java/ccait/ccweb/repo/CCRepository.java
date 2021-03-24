@@ -1,16 +1,19 @@
 package ccait.ccweb.repo;
 
-import ccait.ccweb.entites.DefaultEntity;
+import ccait.ccweb.annotation.Entity;
 import entity.query.Queryable;
 import entity.query.core.DBTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Hashtable;
 
+@Scope("prototype")
 @org.springframework.stereotype.Repository
 public class CCRepository {
 
@@ -35,12 +38,15 @@ public class CCRepository {
     public <T> void openSession(Class<T> clazz) {
         try {
             releaseSession();
+            hasSession = true;
             Queryable<T> queryable = (Queryable<T>) get(clazz);
             dbTransaction = queryable.dataSource().beginTransaction();
             connection = queryable.getConnection();
             updateSession(clazz, queryable);
-            hasSession = true;
             if(!DefaultEntity.class.equals(clazz)) {
+                if(!sessionMap.containsKey(DefaultEntity.class)) {
+                    sessionMap.put(DefaultEntity.class, new DefaultEntity());
+                }
                 sessionMap.get(DefaultEntity.class).setConnection(connection);
             }
         } catch (SQLException | ClassNotFoundException throwables) {
@@ -123,5 +129,10 @@ public class CCRepository {
         dbTransaction = null;
         connection = null;
         hasSession = false;
+    }
+
+
+    @Entity
+    private class DefaultEntity extends Queryable<DefaultEntity> {
     }
 }
