@@ -1230,8 +1230,8 @@ entity:
     baidu:  #平台标识${platform}
       id: 11010102202001 #第三方平台密钥
       name: 百度 #第三方平台名称
-      description: 第三方支付通道 #描述
-      key: 26F90B0E6FFD4061B2C8E62BEA6D35C2 #平台的签名密钥
+      description: 第三方通道 #描述
+      key: 26F90B0E6FFDAAAAAA2BEA6D35C2 #平台的签名密钥
       domain: https://www.baidu.com #平台域名
       sign: md5(${postString}${platform.key}) #签名方式,格式string|md5|aes|mac|base64(${变量}或"字符串")
       charset: UTF-8
