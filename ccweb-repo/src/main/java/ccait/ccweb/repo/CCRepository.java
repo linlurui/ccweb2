@@ -29,13 +29,20 @@ public class CCRepository {
     }
 
     public void openSession() {
+        openSession(DefaultEntity.class);
+    }
+
+    public <T> void openSession(Class<T> clazz) {
         try {
             releaseSession();
-            DefaultEntity entity = new DefaultEntity();
-            dbTransaction = entity.dataSource().beginTransaction();
-            connection = entity.getConnection();
-            updateSession(DefaultEntity.class, entity);
+            Queryable<T> queryable = (Queryable<T>) get(clazz);
+            dbTransaction = queryable.dataSource().beginTransaction();
+            connection = queryable.getConnection();
+            updateSession(clazz, queryable);
             hasSession = true;
+            if(!DefaultEntity.class.equals(clazz)) {
+                sessionMap.get(DefaultEntity.class).setConnection(connection);
+            }
         } catch (SQLException | ClassNotFoundException throwables) {
             log.error("Database Transaction Error=====>>> ", throwables);
         }
@@ -69,7 +76,19 @@ public class CCRepository {
     }
 
     public <T> Connection getConnection(Class<T> clazz) {
+        if(connection != null) {
+            return connection;
+        }
+
         return ((Queryable<T>) get(clazz)).getConnection();
+    }
+
+    public <T> DBTransaction getDBTransaction(Class<T> clazz) {
+        if(dbTransaction != null) {
+            return dbTransaction;
+        }
+
+        return ((Queryable<T>) get(clazz)).getTransaction();
     }
 
     public void rollback() {
