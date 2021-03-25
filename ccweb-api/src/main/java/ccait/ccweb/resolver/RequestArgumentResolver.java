@@ -47,45 +47,56 @@ public class RequestArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-
         CCWebRequestWrapper requestWrapper = (CCWebRequestWrapper) ((ServletWebRequest) webRequest).getRequest();
-//        final String parameterJson = ((CCWebRequestWrapper) ((ServletWebRequest) webRequest).getRequest()).getRequestPostString();
-        final Type type = parameter.getGenericParameterType();
-        Class clazz = null;
-
-        if(requestWrapper.getUploadFileMap().size() > 0) {
-            Map<String, Object> parameters = (Map<String, Object>) requestWrapper.getParameters();
-            for(Map.Entry<String, UploadFileInfo> item : requestWrapper.getUploadFileMap().entrySet()) {
-                parameters.put(item.getKey(), item.getValue());
+        try {
+            if(requestWrapper.getParameters() == null) {
+                return null;
+            }
+            final Type type = parameter.getGenericParameterType();
+            if(type.equals(String.class)) {
+                if(requestWrapper.getParameters().getClass().equals(String.class)) {
+                    return requestWrapper.getParameters();
+                }
+                return JsonUtils.toJson(requestWrapper.getParameters());
             }
 
-            return parameters;
-        }
+            Class clazz = null;
 
-        if(type.getTypeName().indexOf("List<") > 0) {
-            List parametes =(List) requestWrapper.getParameters();
-            List result = new ArrayList();
-            for(int i=0; i<parametes.size();i++) {
-                Type argType = ((ParameterizedTypeImpl) type).getActualTypeArguments()[0];
-                if(byte[].class.equals(argType)) {
-                    result.add(parametes.get(i));
+            if (requestWrapper.getUploadFileMap().size() > 0) {
+                Map<String, Object> parameters = (Map<String, Object>) requestWrapper.getParameters();
+                for (Map.Entry<String, UploadFileInfo> item : requestWrapper.getUploadFileMap().entrySet()) {
+                    parameters.put(item.getKey(), item.getValue());
                 }
-                else {
-                    Object obj = JsonUtils.convert(parametes.get(i), getClassByType(argType) );
-                    result.add(obj);
-                }
+
+                return parameters;
             }
 
-            return result;
+            if (type.getTypeName().indexOf("List<") > 0) {
+                List parametes = (List) requestWrapper.getParameters();
+                List result = new ArrayList();
+                for (int i = 0; i < parametes.size(); i++) {
+                    Type argType = ((ParameterizedTypeImpl) type).getActualTypeArguments()[0];
+                    if (byte[].class.equals(argType)) {
+                        result.add(parametes.get(i));
+                    } else {
+                        Object obj = JsonUtils.convert(parametes.get(i), getClassByType(argType));
+                        result.add(obj);
+                    }
+                }
+
+                return result;
+            } else {
+
+                clazz = getClassByType(type);
+            }
+
+            return JsonUtils.convert(requestWrapper.getParameters(), clazz);
+        }
+        catch (Exception e) {
+            log.error("Request参数化失败=====>>> ", e);
         }
 
-        else {
-
-            clazz = getClassByType(type);
-        }
-
-
-        return JsonUtils.convert(requestWrapper.getParameters(), clazz);
+        return requestWrapper.getParameters().toString();
     }
 
     public Class getClassByType(Type type) {
