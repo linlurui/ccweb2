@@ -1,0 +1,8 @@
+Tabs(type="card", size="small", :animated="false", @on-click="onClick", @on-tab-remove="onTabRemove", v-model="$store.state.WorkspaceStore.currentTab", :capture-focus="true")
+    //TabPane(:name="'testtt'", :label="'商城'") 123
+    TabPane(v-for="(item, index) in $store.state.WorkspaceStore.tabPages", closable, v-if="item", :name="item.id", :label="item.name + ' ' + (item.type==getType('TAB_TYPE_DESIGN') ? item.type : '')", class="page-content", :key="index", :index="index")
+        ServiceSetting(v-if="item.id=='serviceSetting'")
+        ProfileSetting(v-else-if="item.id=='profileSetting'")
+        Document(v-else-if="item.type==getType('TAB_TYPE_DOCUMENT')")
+        CCTest(v-else-if="item.type==getType('TAB_TYPE_INTERFACE')", :id="item.id", :key="item.key", mode="json", :tips="item.json.tips" :url="item.json.method+item.json.url", :method="item.json.method", :json="getJsonString(item.json.postData)")
+        CCTable(v-else, :table="item.id", :ref="item.id + 'Table'", :pageSize="10", :pageIndex="1")

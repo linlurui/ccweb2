@@ -1,0 +1,38 @@
+.layout
+    Header(:style="{position: 'fixed', width: '100%', marginLeft:'-1px', marginTop:'-1px'}")
+        .text-logo
+            span CCWEB动态服务开发框架v2.0
+        .login
+            //Tooltip(content="会员中心", placement="right", :delay="1000")
+            //    Icon(type="ios-contact", :style="{fontSize:'18pt'}")
+            //    a(href="javascript:void(0)") 草耑
+            //
+            //Tooltip(content="系统设置", placement="right", :delay="1000")
+            //    Icon(type="md-settings")
+            //
+            //Tooltip(content="网站服务", placement="right", :delay="1000")
+            //    Icon(type="md-globe")
+
+
+    Split.spliter(v-model='splitWidth', :min="0.16", :max="0.5")
+        div.framework-spliter(slot="left")
+            Navigation
+        div.framework-spliter(slot="right")
+            Layout
+                Content(:style="{padding: '0 16px 16px'}")
+                    Breadcrumb(v-if="showPath()", :style="{margin: '16px 0'}")
+                        Button(v-if="isService()", icon="md-checkmark-circle-outline", title="保存", @click="saveAppConfig()")
+                        Button(v-if="isData()", icon="ios-create-outline", title="修改表", @click="editTable()")
+                        Button(v-if="isData()", icon="ios-remove-circle-outline", title="删除表", @click="dropConfirm")
+                        Button(icon="ios-close-circle", title="关闭全部", @click="closeAll()")
+                        BreadcrumbItem(v-for="item in showPath()", :key="item") {{item}}
+
+            Card(class="design-workspace")
+                router-view
+    Modal(v-model="$store.state.DatasourceStore.showDeleteDialog", title="删除", ok-text="确定", cancel-text="取消", @on-ok="dropTable")
+        p(slot="header", style="color:#f60;text-align:center")
+            Icon(type="ios-information-circle")
+            span 确认删除
+        div(style="text-align:center")
+            p 数据表删除后将无法撤销
+            p 是否继续删除？

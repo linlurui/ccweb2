@@ -1,0 +1,45 @@
+.search-panel {
+    margin-top: -14px;
+    display: inline-table;
+    width: 100%;
+}
+
+.search-panel ul {
+    padding: 5px;
+    background-color: #fbfcfd;
+    display: table-cell;
+    list-style: none;
+    height: 100%;
+    width: 100%;
+}
+
+.search-panel ul li {
+    margin-bottom: 2px;
+    float: left;
+    max-width: 133px;
+    margin-left: 5px;
+    white-space: nowrap;
+}
+
+.table-option-button {
+    float: right;
+    position: relative;
+    top: -32px;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.table-page .ivu-page {
+    margin-top: 2px;
+}
+
+.ivu-table-row {
+    cursor: pointer !important;
+}
+
+.cctable-checkbox {
+    display: block;
+    width: auto;
+    float: left;
+    margin-left: 20px;
+}

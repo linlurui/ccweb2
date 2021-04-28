@@ -1,0 +1,11 @@
+.ccviewer
+    .video(v-if="type=='VIDEO' || type=='AUDIO'", :ref="id", :trigger="srcList", v-viewer="{movable: false}", :id="id", rebuild, :options="options")
+    .pdf(v-else-if="suffix=='PDF' || convertType=='pdf'", :ref="id", :trigger="srcList", v-viewer="{movable: false}", :id="id", rebuild, :options="options")
+        pdf(:src="srcList[0]", :id="'PDF_' + id", :style="{display: 'none'}", class="pdf-viewer", :page="pageNum", @num-pages="pageCount=$event", @page-loaded="currentPage=$event", @loaded="loadPdfHandler")
+    .doc(v-else-if="(suffix=='DOC' || suffix=='DOCX') && !convertType", :ref="id", :trigger="srcList", v-viewer="{movable: false}", :id="id", rebuild, :options="options")
+    .xls(v-else-if="(suffix=='XLS' || suffix=='XLSX') && !convertType", :ref="id", :trigger="srcList", v-viewer="{movable: false}", :id="id", rebuild, :options="options")
+    .html(v-else-if="suffix=='HTM' || suffix=='HTML' || convertType=='html'", :ref="id", :trigger="srcList", v-viewer="{movable: false}", :id="id", rebuild, :options="options")
+    .txt(v-else-if="(suffix=='TXT' || suffix=='LOG') && !convertType", :ref="id", :trigger="srcList", v-viewer="{movable: false}", :id="id", rebuild, :options="options")
+    .ccimage(v-else, :ref="id", v-viewer="{movable: false}", :id="id", rebuild, :options="options")
+        img(v-for="(item, index) in srcList", :src="getSrc(item)", :key="item", :style="{display: 'none'}", @error="onError")
+    Icon(:type="getIcon()", @click="onView", :style="{cursor: 'pointer', fontSize: '22px', color: '#2d8cf0'}")

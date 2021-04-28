@@ -1,0 +1,42 @@
+.cctest
+    Spin(fix, v-show="getForm().loading")
+        #cclogo
+            #translation
+                #logoImg
+    Form
+        FormItem(ref="url")
+            CCInput(placeholder="请填写请求地址", :prepend="['post', 'put', 'delete', 'get', 'options', 'patch']", type="text", attribute="url", @change="changeValue", :value="getForm().url", :css="{width: 'calc(100% - 115px)', float: 'left'}")
+            Button(type="primary", @click="submit", style="font-weight: bold;") 提交请求
+            Poptip(v-if="hasTips()", transfer, word-wrap, trigger="hover")
+                Button(icon="md-help", size="small", shape="circle", class="help")
+                .poptip(slot="content")
+                    p(v-for="(item, index) in getTipList()")
+                        strong(v-if="item.type='title'") {{item.content}}
+                        span(v-else-if="item.type='item'") &bull; {{item.content}}
+                        div(v-else-if="item.type='code'") {{item.content}}
+                        span(v-else="item.type='item'") &bull; {{item.content}}
+        Tabs(value='response', :style="{width: 'auto', padding: '10px'}")
+            TabPane(label='提交参数', name='response')
+                FormItem(label='参数拼接方式', ref="paramType")
+                    CCInput(type="radio", :value="getForm().paramType", :options="['JSON', 'URL', 'FORM']")
+                FormItem(ref="params", class="platformTable")
+                    CCInput(v-if="mode='json'", type="textarea", :rows="600", :value="getForm().paramJson", attribute="paramJson", @change="changeValue", :css="{height: 'calc(100vh - 500px)'}")
+                    Table(v-else, stripe, :columns="getParamsColumns('params')" :data="getForm().params")
+                        template(slot-scope="{ row, index }", slot="action")
+                            div
+                                Button(@click="removeParam(index)", v-if="getForm().params.length>1", icon="ios-remove", size="small", type="dashed")
+                                Button(@click="addParam()", v-if="(getForm().params.length-1) == index", icon="ios-add", size="small", type="dashed")
+            TabPane(label='请求头', name='headers')
+                FormItem(ref="headers", class="platformTable")
+                    Table(stripe, :columns="getParamsColumns('headers')" :data="getForm().headers")
+                        template(slot-scope="{ row, index }", slot="action")
+                            div
+                                Button(@click="removeHeader(index)", v-if="getForm().headers.length>1", icon="ios-remove", size="small", type="dashed")
+                                Button(@click="addHeader()", v-if="(getForm().headers.length-1) == index", icon="ios-add", size="small", type="dashed")
+        Tabs(value='response', :style="{width: 'auto', padding: '10px'}")
+            TabPane(label='响应', name='response')
+                FormItem(ref="response", class="platformTable")
+                    CCInput(type="textarea", :rows="600", :value="getForm().response", :readonly="true", :css="{height: 'calc(100vh - 500px)'}")
+            TabPane(label='请求参数', name='request')
+                FormItem(ref="request", class="platformTable")
+                    CCInput(type="textarea", :rows="600", :value="getForm().request", :readonly="true", :css="{height: 'calc(100vh - 500px)'}")

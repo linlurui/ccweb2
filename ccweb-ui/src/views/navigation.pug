@@ -1,0 +1,80 @@
+Menu(active-name="design", @on-select="onSelectMenuItem", theme="dark", :style="{height:'calc(100vh - 63px)'}", width="auto", :open-names="['none']", accordion)
+    Submenu(name="user")
+        template(slot="title")
+            Icon(type="md-people")
+            span 用户
+        MenuItem(name="group") 分组
+        MenuItem(name="role") 角色
+        MenuItem(name="user") 账号
+        MenuItem(name="userGroupRole") 授权
+        MenuItem(name="privilege") 权限
+        MenuItem(name="acl") 访问
+
+    Submenu(name="data")
+        template(slot="title")
+            Icon(type="ios-keypad")
+            span 数据
+        Layout(:style="{minHeight:'25vh'}")
+            Header(class="tableSearch")
+                Row
+                    Col(span="21")
+                        Input(suffix="ios-search", placeholder="按表名筛选", style="padding-left: '16px'", @on-search="tableFilter", search)
+                        AddTablePopup
+                    Col(span="3")
+                        Button(icon="md-settings", shape="circle", title="设置数据源", @click="datasourceSetting")
+            Content
+                MenuItem(v-for="(item, index) in $store.state.DatasourceStore.tables", v-if="(!tableSearchKeyword || item.tableName.indexOf(tableSearchKeyword)>-1)", :name="item.tableName", :title="item.description") {{item.tableName}}
+
+    Submenu(name="interface")
+        template(slot="title")
+            Icon(type="md-link")
+            span 接口
+        MenuItem(@click.native="showTestDialog('query')") 查询
+        MenuItem(@click.native="showTestDialog('insert')") 新增
+        MenuItem(@click.native="showTestDialog('update')") 修改
+        MenuItem(@click.native="showTestDialog('delete')") 删除
+        MenuItem(@click.native="showTestDialog('login')") 登录
+        MenuItem(@click.native="showTestDialog('logout')") 登出
+        MenuItem(@click.native="showTestDialog('getById')") ID查询
+        MenuItem(@click.native="showTestDialog('count')") 查询总数
+        MenuItem(@click.native="showTestDialog('exist')") 是否存在
+        MenuItem(@click.native="showTestDialog('join')") 联表查询
+        MenuItem(@click.native="showTestDialog('joinCount')") 联表查询总数
+        MenuItem(@click.native="showTestDialog('download')") 下载文件
+        MenuItem(@click.native="showTestDialog('preview')") 文件预览
+        MenuItem(@click.native="showTestDialog('play')") 视频播放
+        MenuItem(@click.native="showTestDialog('upload')") 上传文件
+        MenuItem(@click.native="showTestDialog('importExcel')") 导入Excel
+        MenuItem(@click.native="showTestDialog('batchUpdate')") 批量更新
+        MenuItem(@click.native="showTestDialog('batchDelete')") 批量删除
+        MenuItem(@click.native="showTestDialog('exportExcel')") 导出Excel
+        MenuItem(@click.native="showTestDialog('exportJoin')") 联表导出Excel
+        MenuItem(@click.native="showTestDialog('insertAndMax')") 新增并返回ID
+        MenuItem(@click.native="showTestDialog('getLoginInfo')") 获取登录用户
+        MenuItem(@click.native="showTestDialog('sendMessage')") 消息推送
+        MenuItem(@click.native="showTestDialog('esSearch')") 搜索引擎查询
+        MenuItem(@click.native="showTestDialog('stream')") 获取数据流
+        MenuItem(@click.native="showTestDialog('saveAsPdf')") 导入为PDF
+        MenuItem(@click.native="showTestDialog('sendMqttMessage')") 发布MQTT消息
+
+    Submenu(name="service")
+        template(slot="title")
+            Icon(type="md-browsers")
+            span 服务
+        MenuItem(name="serviceSetting") 设置
+        MenuItem(name="profileSetting") 参数
+
+    Submenu(name="document")
+        template(slot="title")
+            Icon(type="md-document")
+            span 文档
+        MenuItem(name="dev-doc") 开发文档
+
+
+    Modal(v-model="$store.state.WorkspaceStore.dialogs.showTestTable", width="666", ref="testTableDialog", title="接口测试", @on-ok="testInterface", @on-cancel="cancelTest")
+        Form(:model="form")
+            FormItem(label="选择表", required)
+                CCInput(placeholder="请选择表名", type="select", attribute="tableName", @change="choseTestTable", :options="getTables()", :value="testInfo.table")
+            FormItem
+                Table(stripe, highlight-row, @on-row-click="selectCurrent", ref="testColumns", :data="getTestColumns()", :height="333", :columns="[{type: 'selection', width: 60}, {key: 'key', title: '列名'}]")
+

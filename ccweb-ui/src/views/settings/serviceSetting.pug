@@ -1,0 +1,69 @@
+.settings
+    Spin(fix, v-show="$store.state.AppConfigTableStore.status.loading")
+        #cclogo
+            #translation
+                #logoImg
+    Tabs(:value="value")
+        TabPane(label="服务", icon="md-browsers", name="service")
+            .cctabpage
+                Form(:model="form")
+                    FormItem(label="服务名", ref="serviceName", required)
+                        CCInput(placeholder="请填写服务名称", type="text", attribute="serviceName", @change="changeValue", :value="form.serviceName")
+                        Poptip(transfer, trigger="hover", :content="'服务名称，必填，本地服务http端口：' + httpPort + '，https端口：' + httpsPort")
+                            Button(icon="md-help", size="small", shape="circle", class="help")
+                    FormItem(label="管理员账号", ref="admin", required)
+                        CCInput(placeholder="请填写管理员账号", type="text", attribute="admin", @change="changeValue", :value="form.admin")
+                        Poptip(transfer, trigger="hover", content="超级管理员的初始账号，必填")
+                            Button(icon="md-help", size="small", shape="circle", class="help")
+                    FormItem(label="管理员密码", ref="password", required)
+                        CCInput(placeholder="请填写管理员密码", type="text", attribute="password", @change="changeValue", :value="form.password")
+                        Poptip(transfer, trigger="hover", content="超级管理员的初始密码，必填")
+                            Button(icon="md-help", size="small", shape="circle", class="help")
+                    FormItem(label="注册中心地址", ref="defaultZone")
+                        CCInput(placeholder="请填写注册中心地址", :prepend="['http://', 'https://']", type="text", attribute="defaultZone", @change="changeValue", :value="form.defaultZone")
+                        Poptip(transfer, trigger="hover", content="分布式环境中注册中心地址，只支持eureka")
+                            Button(icon="md-help", size="small", shape="circle", class="help")
+                    FormItem(label="限时访问", ref="accessTime")
+                        CCInput(type="timerange", attribute="accessTime", @change="changeValue", placeholder="请选择时间范围", :value="form.accessTime")
+                        Poptip(transfer, trigger="hover", content="限制API服务的访问时间")
+                            Button(icon="md-help", size="small", shape="circle", class="help")
+        TabPane(label="安全", icon="md-cube", name="")
+            .cctabpage
+                Form(:model="form")
+                    FormItem(label="MD5加密公钥", ref="md5PublicKey", required)
+                        CCInput(placeholder="请填写MD5加密公钥", type="text", attribute="md5PublicKey", @change="changeValue", :value="form.md5PublicKey")
+                        Poptip(transfer, trigger="hover", content="MD5加密公钥用于数据编码加密，必填")
+                            Button(icon="md-help", size="small", shape="circle", class="help")
+                    FormItem(label="AES加密公钥", ref="aesPublicKey", required)
+                        CCInput(placeholder="请填写AES加密公钥", type="text", attribute="aesPublicKey", @change="changeValue", :value="form.aesPublicKey")
+                        Poptip(transfer, trigger="hover", content="AES加密公钥用于数据加密，必填")
+                            Button(icon="md-help", size="small", shape="circle", class="help")
+                    FormItem(label="白名单", ref="accessIp")
+                        CCInput(placeholder="添加白名单", type="text", attribute="accessIp", @change="changeValue", :value="form.accessIp")
+                        Button(icon="md-add", title="添加白名单", @click="addAccessIp()")
+                        Transfer(:data="form.whiteList", :target-keys="form.blackList", @on-change="onTransfer", :titles="['白名单', '黑名单']")
+
+        TabPane(label="上传", icon="md-cloud-upload", name="upload")
+            .cctabpage
+                Divider 上传设置
+                Form(:model="form")
+                    FormItem(label="上传路径", ref="uploadPath")
+                        Button(icon="md-folder-open", @click="pickFolder") 选择路径
+                        span(style="margin-left: 5px;") {{form.uploadPath}}
+                    FormItem(label="上传类型", ref="mimeTypes")
+                        CCInput(placeholder="请填写文件后辍名", type="tag", attribute="mimeTypes", @change="changeValue", :value="form.mimeTypes")
+                    FormItem(label="文件大小", ref="maxSize")
+                        CCInput(type="number", attribute="maxSize", @change="changeValue", :value="form.maxSize", title="限制上传文件的大小")
+                    FormItem(ref="multiple")
+                        CCInput(type="checkbox", attribute="multiple", @change="changeValue", title="支持多文件上传", :value="form.multiple")
+                Divider 缩略图设置
+                Form(:model="form")
+                    FormItem(label="缩放比例(%)", ref="scalRatio")
+                        CCInput(type="number", attribute="scalRatio", @change="changeValue", :value="form.scalRatio")
+                    FormItem(label="固定宽度(px)", ref="fixedWidth")
+                        CCInput(type="number", attribute="fixedWidth", @change="changeValue", :value="form.fixedWidth")
+                    FormItem(label="文字水印", ref="watermark")
+                        CCInput(type="text", attribute="watermark", @change="changeValue", :value="form.watermark")
+
+        TabPane(label="日志", icon="md-document", name="log")
+            #ccweb-log(style="padding:10px; height: calc(100vh - 220px); overflow: auto;")

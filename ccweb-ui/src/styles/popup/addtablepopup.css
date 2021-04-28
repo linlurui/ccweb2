@@ -1,0 +1,67 @@
+
+.tableSearch .add {
+    padding: 0px !important;
+    border: 0px !important;
+    color: rgb(54, 62, 79) !important;
+    background-color: #fff !important;
+    position: inherit !important;
+    z-index: 55555 !important;
+    margin-top: -67px !important;
+    margin-left: 1px !important;
+    width: 12px !important;
+    height: 30px !important;
+}
+.ivu-poptip {
+    margin-left: 5px;
+}
+.ivu-poptip .ivu-poptip-rel {
+    top: -32px !important;
+}
+.ivu-poptip-popper {
+    margin-top: -28px !important;
+}
+
+.addTableMenus .ivu-poptip-body {
+    padding: 5px;
+}
+.addTableMenus .ivu-menu-item {
+    background: #fff;
+    color: #17233d !important;
+}
+.addTableMenus .ivu-menu-item:hover {
+    background: #ebe4ec !important;
+}
+.addTableMenus .ivu-menu-item-selected {
+    background: #f2f1f3 !important;
+    color: #57a3f3 !important;
+}
+.ivu-menu .ivu-layout-header,.ivu-menu .ivu-layout-content{
+    background-color: #363e4f;
+}
+
+.help {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 12px !important;
+    padding: 0px !important;
+    line-height: 12px !important;
+    margin-left: 5px !important;
+}
+
+.ivu-form-item label {
+    min-width: 90px !important;
+}
+
+.cc-form .ivu-form-item-error-tip {
+    float: right !important;
+    position: relative !important;
+    margin-right: 20px !important;
+}
+
+.table-option-button {
+    float: right;
+    position: relative;
+    top: -32px;
+    margin-left: 3px;
+    margin-right: 3px;
+}

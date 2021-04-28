@@ -1,0 +1,23 @@
+.ivu-radio-group-vertical .ivu-radio-wrapper span {
+    padding-left: 0px;
+    margin-left: 0px;
+}
+
+.ivu-col span label .ivu-btn {
+    padding: 2px;
+}
+
+.ivu-col span label .ivu-btn i {
+    padding: 0px;
+    margin-left: 2px;
+}
+
+.stylepane .ivu-col span label .ivu-btn span {
+    margin-left: -12px;
+    padding-left: initial;
+}
+
+.ivu-input-wrapper textarea {
+    height: 100% !important;
+    overflow-y: auto !important;
+}

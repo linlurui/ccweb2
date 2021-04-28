@@ -1,0 +1,12 @@
+.settings
+    Spin(fix, v-show="$store.state.ProfileSettingStore.status.loading")
+        #cclogo
+            #translation
+                #logoImg
+    Form
+        div(style="padding: 10px; height: calc(100vh - 168px); overflow: auto")
+            Table(stripe, :columns="getKeyValuePartColumns()" :data="dictList")
+                template(slot-scope="{ row, index }", slot="action")
+                    div
+                        Button(@click="removeDict(index)", v-if="dictList.length>1", icon="ios-remove", size="small", type="dashed")
+                        Button(@click="addDict()", v-if="(dictList.length-1) == index", icon="ios-add", size="small", type="dashed")

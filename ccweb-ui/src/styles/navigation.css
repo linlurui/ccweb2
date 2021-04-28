@@ -1,0 +1,92 @@
+
+.tableSearch {
+    padding-top: -10px !important;
+    padding-bottom: 0px !important;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+    line-height: 32px !important;
+    height: 32px !important;
+    margin-top: 0px !important;
+    right: 0px !important;
+    width: auto !important;
+    margin-right: 0px !important;
+}
+
+.tableSearch .ivu-col button {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    line-height: 12px;
+    padding: 1px;
+    margin: 2px;
+    background-color: #515a6e;
+    color: #fff;
+    border: 0px;
+}
+
+.tableSearch input {
+    padding: 4px 16px;
+}
+
+.tableSearch .ivu-input-wrapper {
+    width: 100% !important;
+    position: relative !important;
+}
+
+.searchToolbar {
+    padding-top: -10px !important;
+    padding-bottom: 0px !important;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+    line-height: 32px !important;
+    height: 32px !important;
+    margin-top: -15px !important;
+    right: 0px !important;
+    width: auto !important;
+    margin-right: 0px !important;
+}
+.searchToolbar .ivu-input-wrapper {
+    position: absolute !important;
+    left: 0px !important;
+    right: 0px !important;
+    width: auto !important;
+    margin-right: 0px !important;
+}
+
+.searchToolbar .ivu-input-wrapper .ivu-input-with-suffix {
+    padding-right: 32px !important;
+    padding-left: 20px !important;
+}
+.ivu-tabs-nav {
+    color: #bda98b;
+}
+.ivu-tabs-nav .ivu-tabs-tab-active {
+    color: #f36157!important;
+}
+.ivu-tabs-nav .ivu-tabs-tab:hover {
+    color: #f36157!important;
+}
+.ivu-tabs-nav .ivu-tabs-tab {
+    padding: 8px 5px!important;
+    margin-right: 5px!important;
+}
+.ivu-tabs-nav .ivu-tabs-tab .ivu-icon {
+    margin-right: 0px!important;
+}
+.ivu-tabs-bar {
+    outline: 0;
+    width: 100%;
+}
+
+.ivu-menu-opened {
+    height: calc(100vh - 196px);
+    overflow: auto;
+}
+
+.ivu-layout-content {
+    background-color: #363e4f;
+}
+
+.addPageMenus .ivu-menu-item {
+    padding: 5px !important;
+}

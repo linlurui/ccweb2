@@ -1,0 +1,121 @@
+{
+  "name": "ccweb",
+  "version": "1.0.0",
+  "description": "ccweb freamwork",
+  "author": "linlurui <rockylin@qq.com>",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "inspect": "vue-cli-service inspect",
+    "make": "node_modules/.bin/electron-forge make",
+    "package-win32": "electron-packager ./dist/ --platform=win32 --arch=x64 --icon=./public/logo16-2.ico",
+    "package-darwin": "electron-packager ./dist/ --platform=darwin --arch=x64 --icon=./public/logo16-2.icns",
+    "start": "electron ./dist"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "co": "^4.6.0",
+    "core-js": "^3.6.5",
+    "file-loader": "^6.0.0",
+    "fs": "^0.0.1-security",
+    "html-webpack-plugin": "latest",
+    "http-proxy": "^1.18.1",
+    "http-proxy-middleware": "^1.0.4",
+    "iview": "^3.5.4",
+    "jade": "^1.11.0",
+    "jade-loader": "^0.8.0",
+    "js-yaml": "^3.14.1",
+    "jshtml": "^0.3.0",
+    "less-loader": "^6.2.0",
+    "pug": "^3.0.0",
+    "register-service-worker": "^1.7.1",
+    "stylus": "^0.54.7",
+    "stylus-loader": "^3.0.2",
+    "typescript": "~3.9.3",
+    "vue": "^2.6.11",
+    "vue-class-component": "^7.2.3",
+    "vue-property-decorator": "^8.4.2",
+    "vue-router": "^3.2.0",
+    "vuex": "^3.4.0",
+    "vuex-module-decorators": "^0.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.24",
+    "@types/vue-color": "^2.4.2",
+    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/parser": "^2.33.0",
+    "@vue/cli": "^4.4.6",
+    "@vue/cli-plugin-babel": "~4.4.0",
+    "@vue/cli-plugin-eslint": "~4.4.0",
+    "@vue/cli-plugin-pwa": "~4.4.0",
+    "@vue/cli-plugin-router": "~4.4.0",
+    "@vue/cli-plugin-typescript": "~4.4.0",
+    "@vue/cli-plugin-vuex": "~4.4.0",
+    "@vue/cli-service": "~4.4.0",
+    "@vue/devtools": "^5.3.3",
+    "@vue/eslint-config-standard": "^5.1.2",
+    "@vue/eslint-config-typescript": "^5.0.2",
+    "copy-webpack-plugin": "^6.0.3",
+    "css": "^3.0.0",
+    "css-loader": "^3.6.0",
+    "electron-devtools-installer": "^3.1.0",
+    "electron-packager": "^15.0.0",
+    "electron-prebuilt": "^1.4.13",
+    "eslint": "^6.7.2",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-vue": "^6.2.2",
+    "lowdb": "^1.0.0",
+    "mammoth": "^1.4.16",
+    "md5-typescript": "^1.0.5",
+    "pug-plain-loader": "^1.0.0",
+    "v-viewer": "^1.5.1",
+    "vue-codemirror": "^4.0.6",
+    "vue-color": "^2.7.1",
+    "vue-pdf": "^4.2.0",
+    "vue-router-invoke-webpack-plugin": "^0.4.4",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.6.11",
+    "xlsx": "^0.16.9"
+  },
+  "db": "./web/db",
+  "main": "main.js",
+  "server": {
+    "ssl": false,
+    "httpPort": 8080,
+    "httpsPort": 8088,
+    "domain": "localhost",
+    "datasource": "ccweb"
+  },
+  "production": false,
+  "webConfig": "web/config.json",
+  "build": {
+    "appId": "com.ccait",
+    "copyright": "ccait",
+    "productName": "ccweb",
+    "dmg": {
+      "background": "./public/logo3.png",
+      "icon": "./public/logo48-2.icns",
+      "window": {
+        "x": 100,
+        "y": 100,
+        "width": 500,
+        "height": 300
+      }
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "./public/logo16-2.icns"
+    },
+    "squirrelWindows": {
+      "iconUrl": "./public/logo16-2.ico"
+    },
+    "win": {
+      "icon": "./public/logo16-2.ico"
+    }
+  }
+}

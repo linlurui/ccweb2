@@ -1,0 +1,93 @@
+.layout{
+    border: 1px solid #d7dde4;
+    background: #f5f7f9;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.text-logo{
+    width: auto;
+    height: 58px;
+    border-radius: 3px;
+    float: left;
+    position: relative;
+    top: 5px;
+    left: 5px;
+    color: aliceblue;
+    font-size: x-large;
+    margin-left: 58px;
+}
+.ivu-layout-header {
+    padding-right: 5px;
+    padding-left: 20px;
+    background-image: url('../../public/logo1-32.png');
+    background-repeat: no-repeat;
+    background-origin: content-box;
+    background-position-x: 15px;
+    background-position-y: 20px;
+}
+.login{
+    display: block;
+    float: right;
+    width: auto;
+    height: 60px;
+    color: #fff;
+    font-size: 14pt;
+    line-height: 60px;
+    padding-top: 4px;
+}
+.login a {
+    font-size: 15px;
+    margin-right: 5px;
+}
+.login .ivu-icon {
+    margin-left: 10px;
+    cursor: pointer;
+}
+.spliter {
+    position: fixed;
+    left: 0px;
+    top: 63px;
+    bottom: 0px;
+    height: auto;
+}
+.framework-spliter {
+    display: block;
+    height: 100%;
+}
+.framework-spliter .ivu-menu {
+    overflow: auto;
+}
+.framework-spliter .ivu-layout-content {
+    padding-bottom: 0px !important;
+}
+.framework-spliter .ivu-layout-content .ivu-breadcrumb {
+    margin: 5px 0px !important;
+}
+.ivu-split-horizontal .ivu-split-pane.left-pane {
+    bottom: 0px !important;
+    top: 0px !important;
+    position: fixed !important;
+    margin-top: 64px !important;
+    left: 0px !important;
+    min-width: 300px;
+}
+.ivu-split-horizontal .ivu-split-pane.right-pane {
+    bottom: 0px !important;
+    top: 0px !important;
+    position: fixed !important;
+    margin-top: 64px !important;
+    left: 0px !important;
+}
+.ivu-breadcrumb button {
+    font-size: 16px;
+    width: 24px;
+    color: #2aa56e;
+    margin-right: -10px;
+    float: right;
+    height: 24px;
+    line-height: 12px;
+    padding: 0px;
+    margin-left: 15px;
+}

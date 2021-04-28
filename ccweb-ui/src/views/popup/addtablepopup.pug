@@ -1,0 +1,47 @@
+Poptip(title="新建", placement="right-start", v-model="visible", width="auto", transfer, popper-class="addTableMenus", offset="-32")
+    Button(icon="md-add", title="新建表", class="add")
+    Menu(class="addTableMenus" active-name="defaultMenu", theme="dark", width="auto", minWidth="200px", slot="content")
+        MenuItem(@click.native="openTableSettingDialog") 新建表
+    Modal(v-model="$store.state.DatasourceStore.showDatasourceDialog", ref="settingDialog", title="数据源设置", :loading="loading", @on-ok="saveSetting" @on-cancel="closeDialog")
+        Form(ref="datasourceForm", :model="datasourceForm", :rules="datasourceValidateRules", class="cc-form")
+            FormItem(label="数据源名称", prop="dsName")
+                Input(placeholder="请输入数据源名称", v-model="datasourceForm.dsName", :style="{maxWidth: '300px'}")
+                Poptip(trigger="hover", content="数据源是请求后端API的前辍，假如数据源名称为ds，那么发起请求时前辍为api/ds")
+                    Button(icon="md-help", size="small", shape="circle", class="help")
+            FormItem(label="数据库类型", prop="type")
+                Select(placeholder="请选择数据库类型", v-model="datasourceForm.type", :style="{maxWidth: '300px'}")
+                    Option(value="org.sqlite.JDBC") SQLite
+                    Option(value="org.apache.derby.jdbc.ClientDriver") derby
+                    Option(value="com.mysql.cj.jdbc.Driver") mysql
+                    Option(value="org.mariadb.jdbc.Driver") MariaDB
+                    Option(value="com.microsoft.sqlserver.jdbc.SQLServerDriver") SQL Server
+                    Option(value="oracle.jdbc.OracleDriver") Oracle
+                    Option(value="org.postgresql.Driver") postgresql
+                    //Option(value="org.apache.hive.jdbc.HiveDriver") Hadoop
+            FormItem(v-if="datasourceForm.type!='org.sqlite.JDBC'", label="数据库名称", prop="dbName")
+                Input(placeholder="请输入数据库名称", v-model="datasourceForm.dbName", :style="{maxWidth: '300px'}")
+                Poptip(trigger="hover", content="数据库库名")
+                    Button(icon="md-help", size="small", shape="circle", class="help")
+            FormItem(v-if="datasourceForm.type!='org.sqlite.JDBC'", label="地址", prop="domain")
+                Input(placeholder="请输入数据库域名或IP地址", v-model="datasourceForm.domain", :style="{maxWidth: '300px'}")
+            FormItem(v-if="datasourceForm.type!='org.sqlite.JDBC'", label="端口", prop="port")
+                Input(placeholder="请输入端口", v-model="datasourceForm.port", :style="{maxWidth: '300px'}")
+            FormItem(label="用户名", prop="username")
+                Input(placeholder="请输入用户名", v-model="datasourceForm.username", :style="{maxWidth: '300px'}")
+            FormItem(label="密码", prop="password")
+                Input(placeholder="请输入密码", type="password", password, v-model="datasourceForm.password", :style="{maxWidth: '300px'}")
+
+    Modal(v-model="$store.state.DatasourceStore.showTableDialog", width="666", ref="buildDialog", :title="$store.state.DatasourceStore.currentTablename ? '修改表' : '新建表'", :loading="loading", @on-ok="buildTable", @on-cancel="closeDialog")
+        Form(ref="tableForm", :model="tableForm", :rules="tableValidateRules")
+            FormItem(label="表名", prop="tableName")
+                Input(v-if="$store.state.DatasourceStore.currentTablename", disabled, placeholder="请输入表名", v-model="tableForm.tableName", :style="{maxWidth: '300px'}")
+                Input(v-else, placeholder="请输入表名", v-model="tableForm.tableName", :style="{maxWidth: '300px'}")
+                Poptip(trigger="hover", content="表名是数据库中存储的名称，必须输入字母")
+                    Button(icon="md-help", size="small", shape="circle", class="help")
+            FormItem(label="描述", prop="description")
+                Input(placeholder="请输入描述", v-model="tableForm.description", :style="{maxWidth: '300px'}")
+                Poptip(trigger="hover", content="描述将在左侧导航栏显示鼠标悬停提示")
+                    Button(icon="md-help", size="small", shape="circle", class="help")
+            FormItem
+                Table(stripe, ref="tableInfo", :columns="getColumns()" :data="tableForm.columnInfos", :height="255", :loading="loading")
+                Button(shape="circle", @click="onAdd", icon="md-add", title="新增列", class="table-option-button", style="margin-top: 35px")

@@ -1,0 +1,65 @@
+.viewer-canvas video {
+    height: 90%;
+    display: block;
+    margin: auto;
+    padding-top: 5%;
+}
+
+.pdf-viewer,.doc-viewer,.xls-viewer,.html-viewer {
+    position: absolute !important;
+    display: block;
+    width: auto;
+    height: 90%;
+    top: 5px;
+    left: 10px;
+    overflow: auto;
+    right: 10px;
+    bottom: 5px;
+    text-align: center;
+    margin: auto;
+}
+
+.doc-viewer,.xls-viewer {
+    background-color: white;
+    padding: 10px;
+    overflow: auto;
+    border: 0px;
+    min-width: 595px;
+    width: 80% !important;
+}
+
+.xls-viewer {
+    padding: 0px;
+}
+
+.xls-viewer .xls-viewer-sheets,.xls-viewer iframe {
+    padding: 0px;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.ccviewer-loading {
+    color: #2d8cf0;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: auto;
+    text-align: center;
+}
+
+.xls-viewer-sheets {
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+}
+.xls-viewer-sheet {
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    overflow: hidden;
+    border: 0px;
+}

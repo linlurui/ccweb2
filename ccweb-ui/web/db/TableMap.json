@@ -1,0 +1,27 @@
+{
+  "testtt": {
+    "tableName": "testtt",
+    "description": "a",
+    "columnInfos": [
+      {
+        "columnName": "a",
+        "description": "",
+        "dataType": "VARCHAR",
+        "defaultValue": "",
+        "canNotNull": false,
+        "unique": false,
+        "isAutoIncrement": false,
+        "isPrimaryKey": false,
+        "alterMode": 0
+      },
+      {
+        "columnName": "id",
+        "isPrimaryKey": true,
+        "dataType": "INT",
+        "isAutoIncrement": true,
+        "alterMode": 0
+      }
+    ],
+    "removedColumns": []
+  }
+}

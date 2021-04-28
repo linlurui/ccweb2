@@ -272,7 +272,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 8. 联表查询统计
+### 8. 联表查询总数
 * URL：/api/{datasource}/join/count 
 * 请求方式：POST
 * URL参数：{datasource}为数据源ID
@@ -352,7 +352,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * POST参数：无
 
 
-### 14. 上传
+### 14. 上传文件
 * URL：/api/{datasource}/{table}/{field}/upload 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称，{field}为字段名
@@ -374,7 +374,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 15. 批量查询更新
+### 15. 批量更新
 * URL：/api/{datasource}/{table}/update 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -410,7 +410,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 
-### 17. 导出excel
+### 17. 导出Excel
 * URL：/api/{datasource}/{table}/export 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -437,7 +437,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 18. 联表查询导出excel
+### 18. 联表导出Excel
 * URL：/api/{datasource}/export/join 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -478,7 +478,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
-### 19. 新增(返回指定字段的最大值)
+### 19. 新增并返回ID(返回指定字段的最大值)
 * URL：/api/{datasource}/{table}/max/{field} 
 * 请求方式：PUT
 * URL参数：{datasource}数据源,{table}为数据库表名称,{field}为要返回的字段名,接口会返回该字段最后插入的值
@@ -499,7 +499,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
 * POST参数：无
 
-### 21. 导入excel
+### 21. 导入Excel
 * URL：/api/{datasource}/{table}/import 
 * 请求方式：POST
 * URL参数：{datasource}数据源,{table}为数据库表名称,{field}为要返回的字段名,接口会返回该字段最后插入的值
@@ -516,11 +516,11 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
  2. schema的第一行为需要导入的表格表头
  3. schema的第二行为对应数据库的字段名
 
-### 22. 获取当前登录用户
+### 22. 获取登录用户
 * URL：/api/{datasource}/session/user 
 * 请求方式：GET
 
-### 23. Websocket消息推送
+### 23. 消息推送
 * URL：/api/message/send 
 * 请求方式：POST
 * URL参数：无
@@ -539,7 +539,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
-### 24. 通过es搜索引擎查询数据
+### 24. 搜索引擎查询（需要配置Elasticsearch服务器）
 * URL：/api/{datasource}/search/{table} 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -575,7 +575,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
-### 25. 数据滚动接口
+### 25. 获取数据流
 * URL：/api/{datasource}/{table}/stream 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -611,7 +611,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 26. 导入文件并转为PDF接口（需要引用ccweb-office）
+### 26. 导入为PDF（需要引用ccweb-office）
 * URL：/api/{datasource}/import/to/pdf 
 * 请求方式：POST|PUT
 * URL参数：{table}为数据库表名称
@@ -623,7 +623,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     ...
 ```
 
-### 27. 发布消息到MQTT服务器（需要引用ccweb-iot）
+### 27. 发布MQTT消息（需要引用ccweb-iot）
 * URL：/api/mqtt/{datasource}/publish/{table}/{topic}/{qos}/{retained} 
 * 请求方式：POST
 * URL参数：{datasource}=数据源；{table}=数据库表名称；{topic}发布主题；{qos}=0：最多一次的传输，1：至少一次的传输，2：只有一次的传输；{retained}是否保留消息
@@ -763,7 +763,7 @@ BaseContoller规范了ResponseData返回数据的格式，并为用户封装了�
 ```java
 @Component
 @Scope("prototype")
-@Trigger(tablename = "${entity.table.privilege}") //触发器注解,tablename为表名,可选参数
+@Trigger(tablename = "privilege") //触发器注解,tablename为表名,可选参数
 public final class DefaultTrigger {
 
     /***
@@ -1014,7 +1014,7 @@ entity:
 ## 配置中心数据表
 引用ccweb-config包后框架会在启动时自动从指定的配置表读取配置信息，如表不存在会自动创建
 ```yaml
-entity:
+ccweb:
     app-config:
         table: appConfig #表名
 
@@ -1022,7 +1022,7 @@ entity:
 
 ## 实体类生成配置
 ```yaml
-entity:
+ccweb:
     package: ccait.ccweb.entites #实体类生成包路径
     suffix: Entity #实体类生成类名后辍
 
@@ -1030,7 +1030,7 @@ entity:
 
 ## 安全配置选项
 ```yaml
-entity:
+ccweb:
   security: #安全配置选项
     encrypt:
       MD5: #MD5加密配置
@@ -1045,7 +1045,7 @@ entity:
 
 ## 鉴权方式配置
 ```yaml
-entity:
+ccweb:
   auth:
     header: Authorization #鉴权字串请求头
     user:
@@ -1059,7 +1059,7 @@ entity:
 
 ## 参数校验配置
 ```yaml
-entity:
+ccweb:
   validation: #数据提交字段校验器，以下email、mobile为字段名，也可以精确校验:[表名].[字段名]
     email:
       match: ^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$
@@ -1071,7 +1071,7 @@ entity:
 
 ## 输出格式配置
 ```yaml
-entity:
+ccweb:
   formatter: #查询结果输出格式，createOn、modifyOn，也可以精确格式化:[表名].[字段名]
     createOn: yyyy-MM-dd HH:mm
     modifyOn: yyyy-MM-dd HH:mm
@@ -1086,7 +1086,7 @@ entity:
 
 ## 系统保留表与保留字段设置
 ```yaml
-entity:
+ccweb:
   table:
     reservedField: #系统保留字段(必填)
       userPath: userPath #创建者所属路径，体现父子关系，用于like查询
@@ -1117,7 +1117,7 @@ entity:
 
 ## 上传设置
 ```yaml
-entity:
+ccweb:
   upload: #上传设置
     basePath: /Users/administrator/Desktop/upload
     mimeTypes: gif, jpg, png, jpeg, pdf, doc, docx, xls, xlsx, ppt, pptx, mp3, mp4, webm, wav, ogg
@@ -1126,7 +1126,7 @@ entity:
 ```
 ### 可指定具体哪一个字段数据的上传限制，如：
 ```yaml
-entity: 
+ccweb: 
   upload: #上传设置
     multiple: true
     mydb: #库名
@@ -1144,7 +1144,7 @@ entity:
 
 ## 下载设置
 ```yaml
-entity:
+ccweb:
   download: #下载设置
     thumb:  #预览的缩略图
       fixedWidth: 200 #固定宽度
@@ -1155,7 +1155,7 @@ entity:
 
 ## 查询默认分页配置
 ```yaml
-entity:
+ccweb:
     page: #分页配置选项
         maxSize: 50 #分页最大记录数默认值
 
@@ -1163,7 +1163,7 @@ entity:
 
 ## 默认值
 ```yaml
-entity: 
+ccweb: 
   defaultValue: #指定表字段为null时赋于默认值，UUID_RANDOM=UUID.randomUUID()，DATE_NOW=Datetime.now()
     userGroupRole.userGroupRoleId: UUID_RANDOM
     role.roleId: UUID_RANDOM
@@ -1174,7 +1174,7 @@ entity:
 
 ## 白名单、黑名单设置
 ```yaml
-entity:
+ccweb:
   ip:
     whiteList:  #IP白名单, 逗号分隔
     blackList:  #IP黑名单, 逗号分隔
@@ -1201,7 +1201,7 @@ entity:
 
 ## redis配置
 ```yaml
-entity:
+ccweb:
   redis:
     enable: false
     cluster: false
@@ -1215,7 +1215,7 @@ entity:
 ## 字典配置
 redis开启时,字典数据会被缓存到redis
 ```yaml
-entity:
+ccweb:
   dict:
     default: 开发
     map:
@@ -1225,7 +1225,7 @@ entity:
 
 ## 第三方平台代理配置
 ```yaml
-entity:
+ccweb:
   agent:
     baidu:  #平台标识${platform}
       id: 11010102202001 #第三方平台密钥
