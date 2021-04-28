@@ -38,18 +38,18 @@ import java.util.Map;
 
 @Component
 @Scope("prototype")
-@Trigger(tablename = "${entity.table.role}")
+@Trigger(tablename = "${ccweb.table.role}")
 @Order(Ordered.HIGHEST_PRECEDENCE+666)
 public final class RoleTableTrigger implements ITrigger {
 
     private static final Logger log = LoggerFactory.getLogger( RoleTableTrigger.class );
 
-    @Value("${entity.table.reservedField.roleId:roleId}")
+    @Value("${ccweb.table.reservedField.roleId:roleId}")
     private String roleIdField;
 
     @PostConstruct
     private void init() {
-        roleIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.roleId}", roleIdField);
+        roleIdField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.roleId}", roleIdField);
     }
 
     @Override

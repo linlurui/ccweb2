@@ -35,6 +35,7 @@ import com.alibaba.excel.support.ExcelTypeEnum;
 import entity.query.*;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.*;
+import org.apache.http.client.HttpResponseException;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.jcodec.api.JCodecException;
@@ -311,7 +312,7 @@ public abstract class BaseController extends AbstractWebController {
         }
 
         if(getLoginUser() == null) {
-            throw new IOException(LangConfig.getInstance().get("login_please"));
+            throw new HttpResponseException(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("login_please"));
         }
 
         List<ColumnInfo> columns = Queryable.getColumns(CCEntityContext.getCurrentDatasourceId(), table);
@@ -324,22 +325,22 @@ public abstract class BaseController extends AbstractWebController {
             currentDatasource = CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
         }
 
-        Map<String, Object> configMap = ApplicationConfig.getInstance().getMap(String.format("entity.upload.%s.%s.%s", currentDatasource, table, field));
+        Map<String, Object> configMap = ApplicationConfig.getInstance().getMap(String.format("ccweb.upload.%s.%s.%s", currentDatasource, table, field));
         if(configMap == null || configMap.size() < 1) {
             configMap = new HashMap<>();
         }
 
-        String mimeTypes = ApplicationConfig.getInstance().get("${entity.upload.mimeTypes}", "");
+        String mimeTypes = ApplicationConfig.getInstance().get("${ccweb.upload.mimeTypes}", "");
         if(!configMap.containsKey("mimeType") && StringUtils.isNotEmpty(mimeTypes)) {
             configMap.put("mimeType", mimeTypes);
         }
 
-        String maxSize = ApplicationConfig.getInstance().get("${entity.upload.maxSize}", "");
+        String maxSize = ApplicationConfig.getInstance().get("${ccweb.upload.maxSize}", "");
         if(!configMap.containsKey("maxSize") && StringUtils.isNotEmpty(maxSize)) {
             configMap.put("maxSize", maxSize);
         }
 
-        String basePath = ApplicationConfig.getInstance().get("${entity.upload.basePath}", "");
+        String basePath = ApplicationConfig.getInstance().get("${ccweb.upload.basePath}", "");
         if(configMap.containsKey("path") && configMap.get("path")!=null) {
             basePath = basePath + configMap.get("path").toString();
         }
@@ -597,13 +598,13 @@ public abstract class BaseController extends AbstractWebController {
 
         String currentDatasource = CCEntityContext.getCurrentDatasourceId();
         Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(
-                String.format("entity.upload.%s.%s.%s", currentDatasource, table, field)
+                String.format("ccweb.upload.%s.%s.%s", currentDatasource, table, field)
         );
         if(uploadConfigMap == null || uploadConfigMap.size() < 1) {
             throw new IOException("can not find the upload config!!!");
         }
 
-        String basePath = ApplicationConfig.getInstance().get("${entity.upload.basePath}", "");
+        String basePath = ApplicationConfig.getInstance().get("${ccweb.upload.basePath}", "");
         if(uploadConfigMap.containsKey("path") && uploadConfigMap.get("path")!=null) {
             basePath = basePath + uploadConfigMap.get("path").toString();
         }
@@ -669,18 +670,18 @@ public abstract class BaseController extends AbstractWebController {
             }
 
             Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(
-                    String.format("entity.upload.%s.%s.%s", datasourceId, table, field)
+                    String.format("ccweb.upload.%s.%s.%s", datasourceId, table, field)
             );
 
-            String basePath = ApplicationConfig.getInstance().get("${entity.upload.basePath}", "");
+            String basePath = ApplicationConfig.getInstance().get("${ccweb.upload.basePath}", "");
             if(uploadConfigMap == null || uploadConfigMap.size() < 1) {
                 uploadConfigMap = new HashMap<>();
-                String mimeTypes = ApplicationConfig.getInstance().get("${entity.upload.mimeTypes}", "");
+                String mimeTypes = ApplicationConfig.getInstance().get("${ccweb.upload.mimeTypes}", "");
                 if(!uploadConfigMap.containsKey("mimeType") && StringUtils.isNotEmpty(mimeTypes)) {
                     uploadConfigMap.put("mimeType", mimeTypes);
                 }
 
-                String maxSize = ApplicationConfig.getInstance().get("${entity.upload.maxSize}", "");
+                String maxSize = ApplicationConfig.getInstance().get("${ccweb.upload.maxSize}", "");
                 if(!uploadConfigMap.containsKey("maxSize") && StringUtils.isNotEmpty(maxSize)) {
                     uploadConfigMap.put("maxSize", maxSize);
                 }

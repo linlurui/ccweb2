@@ -37,18 +37,18 @@ import java.util.Map;
 
 @Component
 @Scope("prototype")
-@Trigger(tablename = "${entity.table.acl}")
+@Trigger(tablename = "${ccweb.table.acl}")
 @Order(Ordered.HIGHEST_PRECEDENCE+666)
 public final class AclTableTrigger implements ITrigger {
 
     private static final Logger log = LoggerFactory.getLogger( AclTableTrigger.class );
 
-    @Value("${entity.table.reservedField.aclId:aclId}")
+    @Value("${ccweb.table.reservedField.aclId:aclId}")
     private String aclIdField;
 
     @PostConstruct
     private void init() {
-        aclIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.aclId}", aclIdField);
+        aclIdField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.aclId}", aclIdField);
     }
 
     @Override

@@ -37,18 +37,18 @@ import java.util.Map;
 
 @Component
 @Scope("prototype")
-@Trigger(tablename = "${entity.table.group}")
+@Trigger(tablename = "${ccweb.table.group}")
 @Order(Ordered.HIGHEST_PRECEDENCE+666)
 public final class GroupTableTrigger implements ITrigger {
 
     private static final Logger log = LoggerFactory.getLogger( GroupTableTrigger.class );
 
-    @Value("${entity.table.reservedField.groupId:groupId}")
+    @Value("${ccweb.table.reservedField.groupId:groupId}")
     private String groupIdField;
 
     @PostConstruct
     private void init() {
-        groupIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.groupId}", groupIdField);
+        groupIdField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.groupId}", groupIdField);
     }
 
     @Override

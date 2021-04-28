@@ -12,6 +12,7 @@
 package ccait.ccweb.websocket;
 
 import ccait.ccweb.config.LangConfig;
+import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.model.UserGroupRoleModel;
 import ccait.ccweb.model.UserModel;
 import ccait.ccweb.utils.EncryptionUtil;
@@ -19,6 +20,7 @@ import entity.query.core.ApplicationConfig;
 
 import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
+import org.apache.tomcat.websocket.WsSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +36,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -47,27 +51,27 @@ public class WebSocketServer {
 
     private static final Logger log = LoggerFactory.getLogger(WebSocketServer.class);
     private static final AtomicInteger OnlineCount = new AtomicInteger(0);
-    private final static Hashtable<String, Session> sessionSet = new Hashtable<>();
-    private final static Hashtable<String, UserModel> sessionIdUserMap = new Hashtable<>();
-    private final static List<Session> allSessions = new ArrayList<>();
+    private final static Map<String, Session> sessionMap = new ConcurrentHashMap<>();
+    private final static Map<String, UserModel> sessionUserMap = new ConcurrentHashMap<>();
+    
     private UserModel currentUser;
 
-    @Value("${entity.security.encrypt.AES.publicKey:ccait}")
+    @Value("${ccweb.security.encrypt.AES.publicKey:ccait}")
     private String aesPublicKey;
 
-    @Value("${entity.table.reservedField.groupId:groupId}")
+    @Value("${ccweb.table.reservedField.groupId:groupId}")
     private String groupIdField;
 
-    @Value("${entity.table.reservedField.userPath:userPath}")
+    @Value("${ccweb.table.reservedField.userPath:userPath}")
     private String userPathField;
 
-    @Value("${entity.table.reservedField.userId:userId}")
+    @Value("${ccweb.table.reservedField.userId:userId}")
     private String userIdField;
 
-    @Value("${entity.table.userGroupRole:userGroupRole}")
+    @Value("${ccweb.table.userGroupRole:userGroupRole}")
     private String userGroupRoleTable;
 
-    @Value("${entity.encoding:UTF-8}")
+    @Value("${ccweb.encoding:UTF-8}")
     private String encoding;
 
     //连接超时
@@ -75,12 +79,12 @@ public class WebSocketServer {
 
     @PostConstruct
     public void init() {
-        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
-        groupIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.groupId}", groupIdField);
-        userPathField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userPath}", userPathField);
-        userIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userId}", userIdField);
-        userGroupRoleTable = ApplicationConfig.getInstance().get("${entity.table.userGroupRole}", userGroupRoleTable);
-        encoding = ApplicationConfig.getInstance().get("${entity.encoding}", encoding);
+        aesPublicKey = ApplicationConfig.getInstance().get("${ccweb.security.encrypt.AES.publicKey}", aesPublicKey);
+        groupIdField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.groupId}", groupIdField);
+        userPathField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.userPath}", userPathField);
+        userIdField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.userId}", userIdField);
+        userGroupRoleTable = ApplicationConfig.getInstance().get("${ccweb.table.userGroupRole}", userGroupRoleTable);
+        encoding = ApplicationConfig.getInstance().get("${ccweb.encoding}", encoding);
     }
 
     /**
@@ -91,33 +95,50 @@ public class WebSocketServer {
 
         session.setMaxIdleTimeout( MAX_TIME_OUT );
 
-        allSessions.add(session);
-        String sessionKey = HttpSession.class.getName();
-        if(!conf.getUserProperties().containsKey(sessionKey)) {
-            return;
-        }
-
-        if(!(conf.getUserProperties().get(sessionKey) instanceof HttpSession)) {
-            return;
-        }
+        HttpSession httpSession = getHttpSession(conf);
 
         try {
-            HttpSession httpSession = (HttpSession) conf.getUserProperties().get(sessionKey);
-
-            sessionSet.put(httpSession.getId(), session);
-
-            if (httpSession.getAttribute(httpSession.getId() + LOGIN_KEY) != null) {
-                currentUser = (UserModel) httpSession.getAttribute(httpSession.getId() + LOGIN_KEY);
-
-                sessionIdUserMap.put(httpSession.getId(), currentUser);
+            if(conf.getUserProperties().containsKey(httpSession.getId())) {
+                UserModel userModel = JsonUtils.parse(conf.getUserProperties().get(httpSession.getId()).toString(), UserModel.class);
+                if(userModel != null) {
+                    httpSession.setAttribute(httpSession.getId() + LOGIN_KEY, userModel);
+                }
             }
 
-            int cnt = OnlineCount.incrementAndGet(); // 在线数加1
-            log.info(LOG_PRE_SUFFIX_BY_SOCKET + String.format("有连接加入，当前连接数为：%s", cnt));
+            if (httpSession.getAttribute(httpSession.getId() + LOGIN_KEY) != null) {
+                log.info(httpSession.getAttribute(httpSession.getId() + LOGIN_KEY).toString());
+                if(httpSession.getAttribute(httpSession.getId() + LOGIN_KEY) instanceof String) {
+                    currentUser = JsonUtils.parse(httpSession.getAttribute(httpSession.getId() + LOGIN_KEY).toString(), UserModel.class);
+                }
+                else {
+                    currentUser = (UserModel) httpSession.getAttribute(httpSession.getId() + LOGIN_KEY);
+                }
+
+                if(currentUser != null) {
+                    sessionUserMap.put(httpSession.getId(), currentUser);
+                    sessionMap.put(((WsSession)session).getHttpSessionId(), session);
+
+                    int cnt = OnlineCount.incrementAndGet(); // 在线数加1
+                    log.info(LOG_PRE_SUFFIX_BY_SOCKET + String.format("有连接加入，当前连接数为：%s", cnt));
+                }
+            }
         }
         catch (Exception e) {
             log.error("HttpSession Error=====>", e);
         }
+    }
+
+    private HttpSession getHttpSession(EndpointConfig conf) {
+        String sessionKey = HttpSession.class.getName();
+        if(!conf.getUserProperties().containsKey(sessionKey)) {
+            return null;
+        }
+
+        if(!(conf.getUserProperties().get(sessionKey) instanceof HttpSession)) {
+            return null;
+        }
+
+        return (HttpSession) conf.getUserProperties().get(sessionKey);
     }
 
     /**
@@ -125,16 +146,15 @@ public class WebSocketServer {
      */
     @OnClose
     public void onClose(Session session) {
-
         try {
-            List<String> ids = sessionSet.entrySet().stream()
+            List<String> ids = sessionMap.entrySet().stream()
                     .filter(a->a.getValue().getId().equals(session.getId()))
                     .map(b->b.getKey()).collect(Collectors.toList());
 
             if(ids != null) {
                 for (String id :ids) {
-                    sessionIdUserMap.remove(id);
-                    sessionSet.remove(id);
+                    sessionUserMap.remove(id);
+                    sessionMap.remove(id);
                 }
             }
         }
@@ -157,13 +177,19 @@ public class WebSocketServer {
         log.info(LOG_PRE_SUFFIX_BY_SOCKET + String.format("来自客户端的消息：%s", text));
         try
         {
+            if(!sessionMap.containsKey(((WsSession)session).getHttpSessionId())) {
+                sendMessage(session, LangConfig.getInstance().get("login_please"));
+                return;
+            }
             if(StringUtils.isEmpty( text )) {
-                throw new Exception(LangConfig.getInstance().get("message_can_not_be_empty"));
+                sendMessage(session, LangConfig.getInstance().get("message_can_not_be_empty"));
+                return;
             }
 
             MessageBody body = JsonUtils.parse(text, MessageBody.class);
             if(StringUtils.isEmpty(body.getMessage())) {
-                throw new Exception(LangConfig.getInstance().get("message_can_not_be_empty"));
+                sendMessage(session, LangConfig.getInstance().get("message_can_not_be_empty"));
+                return;
             }
 
             if(body != null) {
@@ -206,14 +232,14 @@ public class WebSocketServer {
 
     private void sendToRole(ReceiverInfo receiver, String message) {
 
-        List<String> ids = sessionIdUserMap.entrySet().stream()
+        List<String> ids = sessionUserMap.entrySet().stream()
                 .filter(a -> {
                     return a.getValue().getUserGroupRoleModels().stream()
-                            .filter(b -> b.getGroupId().equals(receiver.getGroupId()) &&
-                                    b.getRoleId().equals(receiver.getRoleId())).isParallel();
+                            .filter(b -> b.getGroupId().toString().equals(receiver.getGroupId()) &&
+                                    b.getRoleId().toString().equals(receiver.getRoleId())).isParallel();
                 }).map(c->c.getKey()).collect(Collectors.toList());
 
-        List<Session> list = sessionSet.entrySet().stream()
+        List<Session> list = sessionMap.entrySet().stream()
                 .filter(a->ids.contains(a.getKey())).map(b->b.getValue())
                 .collect(Collectors.toList());
 
@@ -224,14 +250,15 @@ public class WebSocketServer {
 
     private void sendToGroup(ReceiverInfo receiver, String message) {
 
-        List<String> ids = sessionIdUserMap.entrySet().stream()
+        List<String> ids = sessionUserMap.entrySet().stream()
                 .filter(a -> {
                     try {
-                        if(a.getValue().getUserGroupRoleModels() != null && a.getValue().getUserGroupRoleModels().stream().filter(b -> b.getGroupId().equals(receiver.getGroupId())).isParallel()) {
+                        if(a.getValue().getUserGroupRoleModels() != null && a.getValue().getUserGroupRoleModels().stream()
+                                .filter(b -> b.getGroupId().toString().equals(receiver.getGroupId())).isParallel()) {
                             return true;
                         }
-                        UserGroupRoleModel groupModel = new UserGroupRoleModel();
-                        String aesFields = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.fields}", "");
+                        UserGroupRoleModel userGroupModel = new UserGroupRoleModel();
+                        String aesFields = ApplicationConfig.getInstance().get("${ccweb.security.encrypt.AES.fields}", "");
                         List<String> aesFieldList = StringUtils.splitString2List(aesFields, ",");
                         String groupIdString = receiver.getGroupId();
                         if(aesFieldList.stream()
@@ -240,10 +267,11 @@ public class WebSocketServer {
                             groupIdString = EncryptionUtil.decryptByAES(groupIdString, aesPublicKey);
                         }
 
-                        groupModel.setGroupId(Integer.parseInt(groupIdString));
-                        List<Integer> userIdList = groupModel
-                                .where("[groupId]=#{groupId}")
-                                .select("userId")
+                        userGroupModel.setGroupId(Integer.parseInt(groupIdString));
+                        List<Integer> userIdList = userGroupModel
+                                .where(groupIdField + "=#{groupId}")
+                                .groupby("")
+                                .select(userIdField)
                                 .query(Integer.class);
 
                         if(userIdList.contains(a.getValue().getUserId())) {
@@ -257,7 +285,7 @@ public class WebSocketServer {
                     return false;
                 }).map(c->c.getKey()).collect(Collectors.toList());
 
-        List<Session> list = sessionSet.entrySet().stream()
+        List<Session> list = sessionMap.entrySet().stream()
                 .filter(a->ids.contains(a.getKey())).map(b->b.getValue())
                 .collect(Collectors.toList());
 
@@ -268,11 +296,11 @@ public class WebSocketServer {
 
     private void sendToUser(ReceiverInfo receiver, String message) {
 
-        List<String> ids = sessionIdUserMap.entrySet().stream()
+        List<String> ids = sessionUserMap.entrySet().stream()
                 .filter(a->receiver.getUsernames().contains(a.getValue().getUsername()))
                 .map(b->b.getKey()).collect(Collectors.toList());
 
-        List<Session> list = sessionSet.entrySet().stream()
+        List<Session> list = sessionMap.entrySet().stream()
                 .filter(a->ids.contains(a.getKey())).map(b->b.getValue())
                 .collect(Collectors.toList());
 
@@ -309,8 +337,8 @@ public class WebSocketServer {
      * @throws IOException
      */
     public static void sendToAll(String message) throws Exception {
-        for (Session session : allSessions) {
-            sendMessage(session, message);
+        for (Map.Entry<String, Session> session : sessionMap.entrySet()) {
+            sendMessage(session.getValue(), message);
         }
     }
 
@@ -321,7 +349,7 @@ public class WebSocketServer {
      * @throws IOException
      */
     public static void sendMessage(String httpSessionId,String message) throws Exception {
-        Session session = sessionSet.get( httpSessionId );
+        Session session = sessionMap.get( httpSessionId );
         if(session!=null){
             sendMessage(session, message);
         }

@@ -82,11 +82,8 @@ mqtt:
         - testtt:
             qos: 0
 
-# 6.ccweb配置
+# 6.数据源配置
 entity:
-  lang: cn
-  account: ccait.cn
-  license: B80F581FCE37105D833B371B1CB6B9B0C73CC024B11613EE97E405B3FE56B6C9
   datasource:
     activated: sqlite #可通过url的{datasource}参数访问到该数据库，没有在此设置的environment不能通过url访问到
     #configFile: db-config.xml #数据库配置路径
@@ -96,13 +93,20 @@ entity:
         driver: org.sqlite.JDBC
         url: jdbc:sqlite:ccait.db
 
-#      mydb:  #库名，mysql数据源配置示例
-#        default: false
-#        driver: com.mysql.cj.jdbc.Driver
-#        url: jdbc:mysql://localhost:3306/mydb?characterEncoding=utf8&useSSL=false&serverTimezone=UTC&rewriteBatchedStatements=true
-#        username: root
-#        password: 123456
+  #      mydb:  #库名，mysql数据源配置示例
+  #        default: false
+  #        driver: com.mysql.cj.jdbc.Driver
+  #        url: jdbc:mysql://localhost:3306/mydb?characterEncoding=utf8&useSSL=false&serverTimezone=UTC&rewriteBatchedStatements=true
+  #        username: root
+  #        password: 123456
 
+
+
+# 7.ccweb配置
+ccweb:
+  lang: cn
+  account: ccait.cn
+  license: B80F581FCE37105D833B371B1CB6B9B0C73CC024B11613EE97E405B3FE56B6C9
   ignoreTotalCount: true #忽略查询总数
   package: ccait.ccweb.entites #实体类生成包路径
   suffix: Entity #实体类生成类名后辍
@@ -239,7 +243,7 @@ entity:
     privilegeId: UUID_RANDOM
     acl.aclId: UUID_RANDOM
 
-# 7.服务器配置
+# 8.服务器配置
 server:
   port: 8000 #端口号
   tomcat:

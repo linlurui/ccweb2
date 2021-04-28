@@ -15,6 +15,7 @@ import ccait.ccweb.context.CCApplicationContext;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.NetworkUtils;
 import ccait.ccweb.wrapper.CCWebRequestWrapper;
+import entity.query.core.ApplicationConfig;
 import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
 import org.apache.http.HttpException;
@@ -65,11 +66,12 @@ public class AuthFilter implements WebFilter, Filter {
     {
 
         final HttpServletResponse res = (HttpServletResponse)response;
-        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Origin", ApplicationConfig.getInstance().get("${ccweb.auth.allowOrigin}", "*"));
         res.setHeader("Access-Control-Allow-Credentials", "true");
-        res.setHeader("Access-Control-Allow-Methods", "POST, GET, PATCH, DELETE, PUT");
-        res.setHeader("Access-Control-Max-Age", "3600");
-        res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.setHeader("Access-Control-Allow-Methods",  ApplicationConfig.getInstance().get("${ccweb.auth.allowMethods}", "*"));
+        res.setHeader("Access-Control-Max-Age", ApplicationConfig.getInstance().get("${ccweb.auth.allowMethods}", "3600"));
+        res.setHeader("Access-Control-Allow-Headers", ApplicationConfig.getInstance().get("${ccweb.auth.allowHeaders}", "*"));
+        res.setHeader("Access-Control-Expose-Headers", ApplicationConfig.getInstance().get("${ccweb.auth.exposeHeaders}", "*"));
         res.setContentType("application/json; charset=utf-8");
         res.setCharacterEncoding("UTF-8");
 

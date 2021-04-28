@@ -29,6 +29,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
+import org.apache.http.client.HttpResponseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,25 +54,25 @@ import static ccait.ccweb.utils.StaticVars.*;
  */
 public class AuthInterceptor extends AbstractPermissionInterceptor implements HandlerInterceptor {
 
-    @Value("${entity.security.admin.username:admin}")
+    @Value("${ccweb.security.admin.username:admin}")
     private String admin;
 
-    @Value("${entity.ip.whiteList:}")
+    @Value("${ccweb.ip.whiteList:}")
     private String whiteListText;
 
-    @Value("${entity.ip.blackList:}")
+    @Value("${ccweb.ip.blackList:}")
     private String blackListText;
 
-    @Value("${entity.security.encrypt.AES.publicKey:ccait}")
+    @Value("${ccweb.security.encrypt.AES.publicKey:ccait}")
     private String aesPublicKey;
 
-    @Value("${entity.auth.user.jwt.enable:false}")
+    @Value("${ccweb.auth.user.jwt.enable:false}")
     private boolean jwtEnable;
 
-    @Value("${entity.auth.user.aes.enable:false}")
+    @Value("${ccweb.auth.user.aes.enable:false}")
     private boolean aesEnable;
 
-    @Value("${entity.auth.user.wechat.enable:false}")
+    @Value("${ccweb.auth.user.wechat.enable:false}")
     private boolean wechatEnable;
 
     private static final Logger log = LoggerFactory.getLogger( AuthInterceptor.class );
@@ -80,13 +81,13 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
 
     @PostConstruct
     private void construct() {
-        whiteListText = ApplicationConfig.getInstance().get("${entity.ip.whiteList}", whiteListText);
-        blackListText = ApplicationConfig.getInstance().get("${entity.ip.blackList}", blackListText);
-        jwtEnable = ApplicationConfig.getInstance().get("${entity.auth.user.jwt.enable}", jwtEnable);
-        aesEnable = ApplicationConfig.getInstance().get("${entity.auth.user.aes.enable}", aesEnable);
-        wechatEnable = ApplicationConfig.getInstance().get("${entity.auth.user.wechat.enable}", wechatEnable);
-        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
-        admin = ApplicationConfig.getInstance().get("${entity.security.admin.username}", admin);
+        whiteListText = ApplicationConfig.getInstance().get("${ccweb.ip.whiteList}", whiteListText);
+        blackListText = ApplicationConfig.getInstance().get("${ccweb.ip.blackList}", blackListText);
+        jwtEnable = ApplicationConfig.getInstance().get("${ccweb.auth.user.jwt.enable}", jwtEnable);
+        aesEnable = ApplicationConfig.getInstance().get("${ccweb.auth.user.aes.enable}", aesEnable);
+        wechatEnable = ApplicationConfig.getInstance().get("${ccweb.auth.user.wechat.enable}", wechatEnable);
+        aesPublicKey = ApplicationConfig.getInstance().get("${ccweb.security.encrypt.AES.publicKey}", aesPublicKey);
+        admin = ApplicationConfig.getInstance().get("${ccweb.security.admin.username}", admin);
     }
 
     @Override
@@ -184,15 +185,24 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
 
             else {
                 CCWebRequestWrapper requestWarpper = (CCWebRequestWrapper)request;
-                QueryInfo queryInfo = JsonUtils.convert(requestWarpper.getParameters(), QueryInfo.class);
-                List<String> tableList = new ArrayList<String>();
-                if(queryInfo != null && queryInfo.getJoinTables() != null && queryInfo.getJoinTables().size() > 0) {
-                    for (int i = 0; i < queryInfo.getJoinTables().size(); i++) {
-                        if(StringUtils.isEmpty(queryInfo.getJoinTables().get(i).getTablename())) {
-                            continue;
+                if(requestWarpper.getParameters() == null) {
+                    return true;
+                }
+
+                if(requestWarpper.getParameters() instanceof QueryInfo) {
+                    QueryInfo queryInfo = JsonUtils.convert(requestWarpper.getParameters(), QueryInfo.class);
+                    List<String> tableList = new ArrayList<String>();
+                    if (queryInfo != null && queryInfo.getJoinTables() != null && queryInfo.getJoinTables().size() > 0) {
+                        for (int i = 0; i < queryInfo.getJoinTables().size(); i++) {
+                            if (StringUtils.isEmpty(queryInfo.getJoinTables().get(i).getTablename())) {
+                                continue;
+                            }
+                            canAccess = canAccess && canAccessTable(method, (CCWebRequestWrapper) request, response, requiredPermission, attrs, queryInfo.getJoinTables().get(i).getTablename());
                         }
-                        canAccess = canAccess && canAccessTable(method, (CCWebRequestWrapper) request, response, requiredPermission, attrs, queryInfo.getJoinTables().get(i).getTablename());
                     }
+                }
+                else {
+                    return true;
                 }
             }
         }
@@ -243,7 +253,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
             else {
                 if(!checkPrivilege(table, user, aclList, method, attrs, request.getParameters(), request, response)){
                     if(user == null) {
-                        throw new Exception(LangConfig.getInstance().get("login_please"));
+                        throw new HttpResponseException(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("login_please"));
                     }
                     message = String.format(LangConfig.getInstance().get("has_not_privilege_for_this_table"), user.getUsername(), table, method);
                     log.warn(LOG_PRE_SUFFIX + message);
@@ -463,7 +473,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
 
     private void loginByToken(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-        final String token = request.getHeader(ApplicationConfig.getInstance().get("${entity.auth.header}", DEFAULT_AUTHORIZATION));
+        final String token = request.getHeader(ApplicationConfig.getInstance().get("${ccweb.auth.header}", DEFAULT_AUTHORIZATION));
         if(StringUtils.isEmpty(token)) {
             return;
         }
@@ -489,6 +499,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
                     return;
                 } catch (JWTDecodeException e) {
                     log.error(e.getMessage(), e);
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 }
             }
             else {
@@ -513,7 +524,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
                     throw new RuntimeException("fail to get the token!!!");
                 }
 
-                String userkey = request.getHeader(ApplicationConfig.getInstance().get("${entity.auth.userkey}", DEFAULT_USERKEY));
+                String userkey = request.getHeader(ApplicationConfig.getInstance().get("${ccweb.auth.userkey}", DEFAULT_USERKEY));
                 String vaildCode2 = EncryptionUtil.md5(EncryptionUtil.encryptByAES(user.getUserId().toString(), userkey + aesPublicKey), "UTF-8");
                 if(!vaildCode2.equals(vaildCode) || !userkey.equals(user.getKey())) {
                     throw new RuntimeException("fail to get the token!!!");
@@ -527,6 +538,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
 
             catch (Exception e) {
                 log.error(e.getMessage(), e);
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
             }
         }
     }
@@ -562,7 +574,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
             currentDatasource = CCApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
         }
 
-        Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(String.format("entity.upload.%s.%s", currentDatasource, table));
+        Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(String.format("ccweb.upload.%s.%s", currentDatasource, table));
         if(uploadConfigMap == null || uploadConfigMap.size() < 1) {
             return false;
         }

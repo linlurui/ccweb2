@@ -13,6 +13,7 @@ package ccait.ccweb.controllers;
 
 
 import ccait.ccweb.annotation.AccessCtrl;
+import ccait.ccweb.config.LangConfig;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.websocket.MessageBody;
 import ccait.ccweb.websocket.WebSocketClient;
@@ -20,7 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
+import javax.servlet.http.HttpServletRequest;
+
+import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
 
 
 @RestController
@@ -30,6 +33,10 @@ public class WebsocketController {
 
     @Autowired
     private WebSocketClient wsClient;
+
+    @Autowired
+    protected HttpServletRequest request;
+
 
     /***
      * send message
@@ -41,6 +48,9 @@ public class WebsocketController {
     public ResponseData sendMessage(@RequestBody MessageBody messageBody) {
 
         try {
+            if(request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY) == null) {
+                throw new Exception(LangConfig.getInstance().get("login_please"));
+            }
             wsClient.send(messageBody);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

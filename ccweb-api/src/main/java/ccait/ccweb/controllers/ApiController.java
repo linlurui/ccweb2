@@ -36,36 +36,36 @@ import static ccait.ccweb.utils.StaticVars.*;
 @RequestMapping( value = {"api/{datasource}"} )
 public class ApiController extends BaseController {
 
-    @Value("${entity.auth.user.jwt.millis:600000}")
+    @Value("${ccweb.auth.user.jwt.millis:600000}")
     private long jwtMillis;
 
-    @Value("${entity.auth.user.jwt.enable:false}")
+    @Value("${ccweb.auth.user.jwt.enable:false}")
     private boolean jwtEnable;
 
-    @Value("${entity.auth.user.aes.enable:false}")
+    @Value("${ccweb.auth.user.aes.enable:false}")
     private boolean aesEnable;
 
-    @Value("${entity.auth.user.wechat.enable:false}")
+    @Value("${ccweb.auth.user.wechat.enable:false}")
     private boolean wechatEnable;
 
-    @Value("${entity.security.encrypt.AES.publicKey:ccait}")
+    @Value("${ccweb.security.encrypt.AES.publicKey:ccait}")
     private String aesPublicKey;
 
-    @Value("${entity.auth.user.wechat.secret:}")
+    @Value("${ccweb.auth.user.wechat.secret:}")
     private String secret;
 
-    @Value("${entity.auth.user.wechat.appid:}")
+    @Value("${ccweb.auth.user.wechat.appid:}")
     private String appid;
 
 
     @PostConstruct
     private void construct() {
-        jwtEnable = ApplicationConfig.getInstance().get("${entity.auth.user.jwt.enable}", jwtEnable);
-        aesEnable = ApplicationConfig.getInstance().get("${entity.auth.user.aes.enable}", aesEnable);
-        wechatEnable = ApplicationConfig.getInstance().get("${entity.auth.user.wechat.enable}", wechatEnable);
-        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
-        secret = ApplicationConfig.getInstance().get("${entity.auth.user.wechat.secret}", secret);
-        appid = ApplicationConfig.getInstance().get("${entity.auth.user.wechat.appid}", appid);
+        jwtEnable = ApplicationConfig.getInstance().get("${ccweb.auth.user.jwt.enable}", jwtEnable);
+        aesEnable = ApplicationConfig.getInstance().get("${ccweb.auth.user.aes.enable}", aesEnable);
+        wechatEnable = ApplicationConfig.getInstance().get("${ccweb.auth.user.wechat.enable}", wechatEnable);
+        aesPublicKey = ApplicationConfig.getInstance().get("${ccweb.security.encrypt.AES.publicKey}", aesPublicKey);
+        secret = ApplicationConfig.getInstance().get("${ccweb.auth.user.wechat.secret}", secret);
+        appid = ApplicationConfig.getInstance().get("${ccweb.auth.user.wechat.appid}", appid);
     }
 
     @ResponseBody
@@ -87,7 +87,7 @@ public class ApiController extends BaseController {
         try {
             List result = super.joinQuery(queryInfo);
 
-            queryInfo.getPageInfo().setPageCount();
+            queryInfo.getPageInfo().setTotalRecords(result.size());
 
             return success( result, queryInfo.getPageInfo() );
         } catch (Exception e) {
@@ -209,7 +209,7 @@ public class ApiController extends BaseController {
 
             List result = super.query(table, queryInfo);
 
-            queryInfo.getPageInfo().setPageCount();
+            queryInfo.getPageInfo().setTotalRecords(result.size());
 
             return success( result, queryInfo.getPageInfo() );
         } catch (Exception e) {
@@ -485,7 +485,7 @@ public class ApiController extends BaseController {
 
             List result = super.query(table, queryInfo);
 
-            queryInfo.getPageInfo().setPageCount();
+            queryInfo.getPageInfo().setTotalRecords(result.size());
 
             return success( result, queryInfo.getPageInfo() );
         } catch (Exception e) {
@@ -649,7 +649,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @RequestMapping( value = "logout", method = RequestMethod.GET  )
-    public ResponseData logouted() {
+    public ResponseData logout() {
 
         UserContext.logout(request);
 

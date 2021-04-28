@@ -47,10 +47,10 @@ public class CcwebMqttCallback implements MqttCallback {
     @Value("${mqtt.client.charset:UTF-8}")
     private String charset = "UTF-8";
 
-    @Value("${entity.security.encrypt.AES.publicKey:ccait}")
+    @Value("${ccweb.security.encrypt.AES.publicKey:ccait}")
     private String aesPublicKey;
 
-    @Value("${entity.table.reservedField.createBy:createBy}")
+    @Value("${ccweb.table.reservedField.createBy:createBy}")
     private String createByField;
 
     @Autowired
@@ -59,8 +59,8 @@ public class CcwebMqttCallback implements MqttCallback {
     @PostConstruct
     private void init() {
         charset = ApplicationConfig.getInstance().get("${mqtt.client.charset}", charset);
-        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
-        createByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createBy}", createByField);
+        aesPublicKey = ApplicationConfig.getInstance().get("${ccweb.security.encrypt.AES.publicKey}", aesPublicKey);
+        createByField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.createBy}", createByField);
     }
 
     @Override
@@ -101,8 +101,9 @@ public class CcwebMqttCallback implements MqttCallback {
             }
 
             List<String> fieldList = cloumns.stream().map(a->a.getColumnName()).collect(Collectors.toList());
-            Queryable entity = (Queryable) CCEntityContext.getEntity(table, fieldList);
-            entity.insert();
+            Object entity = CCEntityContext.getEntity(table, fieldList);
+            entity = JsonUtils.convert(data, entity.getClass());
+            ((Queryable)entity).insert();
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);

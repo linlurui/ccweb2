@@ -19,10 +19,12 @@ import ccait.ccweb.mqtt.CcwebMqttClient;
 import ccait.ccweb.utils.EncryptionUtil;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.JsonUtils;
+import org.apache.http.client.HttpResponseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -46,7 +48,7 @@ public class MqttController  extends AbstractWebController {
     @Autowired
     protected HttpServletResponse response;
 
-    @Value("${entity.security.encrypt.AES.publicKey:ccait}")
+    @Value("${ccweb.security.encrypt.AES.publicKey:ccait}")
     private String aesPublicKey;
 
     @Value("${mqtt.client.clientId:clientId}")
@@ -55,7 +57,7 @@ public class MqttController  extends AbstractWebController {
     @PostConstruct
     private void construct() {
         clientId = ApplicationConfig.getInstance().get("${mqtt.client.clientId}", clientId);
-        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
+        aesPublicKey = ApplicationConfig.getInstance().get("${ccweb.security.encrypt.AES.publicKey}", aesPublicKey);
     }
 
     /***
@@ -71,7 +73,7 @@ public class MqttController  extends AbstractWebController {
         try{
             UserModel user = getLoginUser();
             if(user == null) {
-                throw new Exception(LangConfig.getInstance().get("login_please"));
+                throw new HttpResponseException(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("login_please"));
             }
 
             publishMessage(datasource, table, topic, qos, retained, body, user);

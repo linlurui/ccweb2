@@ -12,12 +12,12 @@
 package ccait.ccweb.generator;
 
 
+import ccait.javapoet.JavaFile;
 import entity.query.ColumnInfo;
 import entity.query.Queryable;
 import entity.query.core.ApplicationConfig;
 import entity.query.core.DataSource;
 import entity.tool.util.StringUtils;
-import javapoet.*;
 import java.io.File;
 import java.util.*;
 import entity.query.core.DataSourceFactory;
@@ -72,7 +72,7 @@ public class EntitesGenerator {
 
             String configPath = System.getProperty("user.dir") + "/src/main/resources/"
                     + ApplicationConfig.getInstance().get("entity.datasource.configFile", "db-config.xml");
-            String packagePath = ApplicationConfig.getInstance().get("entity.package", DEFAULT_PACKAGE);
+            String packagePath = ApplicationConfig.getInstance().get("ccweb.package", DEFAULT_PACKAGE);
 
             Collection<DataSource> dsList = DataSourceFactory.getInstance().getAllDataSource(configPath);
             for(DataSource ds : dsList) {
@@ -107,7 +107,7 @@ public class EntitesGenerator {
                         primaryKey = "";
                     }
 
-                    String suffix = ApplicationConfig.getInstance().get("entity.suffix", "Entity");
+                    String suffix = ApplicationConfig.getInstance().get("ccweb.suffix", "Entity");
                     JavaFile javaFile = getJavaFile(tb.getValue(), tb.getKey().toString(), ds.getId(), primaryKey, ds.getClassScope(), suffix, true);
 
                     if(javaFile != null) {

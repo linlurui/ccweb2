@@ -47,26 +47,26 @@ import static ccait.ccweb.utils.StaticVars.*;
 
 @Component
 @Scope("prototype")
-@Trigger(tablename = "${entity.table.user}")
+@Trigger(tablename = "${ccweb.table.user}")
 @Order(Ordered.HIGHEST_PRECEDENCE+666)
 public final class UserTableTrigger implements ITrigger {
 
     private static final Logger log = LoggerFactory.getLogger( UserTableTrigger.class );
 
-    @Value("${entity.security.admin.username:admin}")
+    @Value("${ccweb.security.admin.username:admin}")
     private String admin;
 
-    @Value("${entity.table.reservedField.userId:userId}")
+    @Value("${ccweb.table.reservedField.userId:userId}")
     private String userIdField;
 
-    @Value("${entity.security.encrypt.MD5.publicKey:ccait}")
+    @Value("${ccweb.security.encrypt.MD5.publicKey:ccait}")
     private String md5PublicKey;
 
     @PostConstruct
     private void construct() {
-        admin = ApplicationConfig.getInstance().get("${entity.security.admin.username}", admin);
-        userIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userId}", userIdField);
-        md5PublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.MD5.publicKey}", md5PublicKey);
+        admin = ApplicationConfig.getInstance().get("${ccweb.security.admin.username}", admin);
+        userIdField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.userId}", userIdField);
+        md5PublicKey = ApplicationConfig.getInstance().get("${ccweb.security.encrypt.MD5.publicKey}", md5PublicKey);
     }
 
     @Override

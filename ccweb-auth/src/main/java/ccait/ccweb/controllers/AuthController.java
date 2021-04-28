@@ -40,31 +40,31 @@ public class AuthController extends AbstractWebController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
-    @Value("${entity.auth.user.jwt.millis:600000}")
+    @Value("${ccweb.auth.user.jwt.millis:600000}")
     private long jwtMillis;
 
-    @Value("${entity.auth.user.jwt.enable:false}")
+    @Value("${ccweb.auth.user.jwt.enable:false}")
     private boolean jwtEnable;
 
-    @Value("${entity.auth.user.aes.enable:false}")
+    @Value("${ccweb.auth.user.aes.enable:false}")
     private boolean aesEnable;
 
-    @Value("${entity.auth.user.wechat.enable:false}")
+    @Value("${ccweb.auth.user.wechat.enable:false}")
     private boolean wechatEnable;
 
-    @Value("${entity.ip.whiteList:}")
+    @Value("${ccweb.ip.whiteList:}")
     private String whiteListText;
 
-    @Value("${entity.ip.blackList:}")
+    @Value("${ccweb.ip.blackList:}")
     private String blackListText;
 
-    @Value("${entity.security.encrypt.AES.publicKey:ccait}")
+    @Value("${ccweb.security.encrypt.AES.publicKey:ccait}")
     private String aesPublicKey;
 
-    @Value("${entity.auth.user.wechat.secret:}")
+    @Value("${ccweb.auth.user.wechat.secret:}")
     private String secret;
 
-    @Value("${entity.auth.user.wechat.appid:}")
+    @Value("${ccweb.auth.user.wechat.appid:}")
     private String appid;
 
     @Autowired
@@ -75,14 +75,14 @@ public class AuthController extends AbstractWebController {
 
     @PostConstruct
     private void construct() {
-        whiteListText = ApplicationConfig.getInstance().get("${entity.ip.whiteList}", whiteListText);
-        blackListText = ApplicationConfig.getInstance().get("${entity.ip.blackList}", blackListText);
-        jwtEnable = ApplicationConfig.getInstance().get("${entity.auth.user.jwt.enable}", jwtEnable);
-        aesEnable = ApplicationConfig.getInstance().get("${entity.auth.user.aes.enable}", aesEnable);
-        wechatEnable = ApplicationConfig.getInstance().get("${entity.auth.user.wechat.enable}", wechatEnable);
-        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
-        secret = ApplicationConfig.getInstance().get("${entity.auth.user.wechat.secret}", secret);
-        appid = ApplicationConfig.getInstance().get("${entity.auth.user.wechat.appid}", appid);
+        whiteListText = ApplicationConfig.getInstance().get("${ccweb.ip.whiteList}", whiteListText);
+        blackListText = ApplicationConfig.getInstance().get("${ccweb.ip.blackList}", blackListText);
+        jwtEnable = ApplicationConfig.getInstance().get("${ccweb.auth.user.jwt.enable}", jwtEnable);
+        aesEnable = ApplicationConfig.getInstance().get("${ccweb.auth.user.aes.enable}", aesEnable);
+        wechatEnable = ApplicationConfig.getInstance().get("${ccweb.auth.user.wechat.enable}", wechatEnable);
+        aesPublicKey = ApplicationConfig.getInstance().get("${ccweb.security.encrypt.AES.publicKey}", aesPublicKey);
+        secret = ApplicationConfig.getInstance().get("${ccweb.auth.user.wechat.secret}", secret);
+        appid = ApplicationConfig.getInstance().get("${ccweb.auth.user.wechat.appid}", appid);
     }
 
     /***
@@ -110,7 +110,7 @@ public class AuthController extends AbstractWebController {
      */
     @ResponseBody
     @RequestMapping( value = "logout", method = RequestMethod.GET  )
-    public ResponseData logouted() {
+    public ResponseData logout() {
 
         UserContext.logout(request);
 

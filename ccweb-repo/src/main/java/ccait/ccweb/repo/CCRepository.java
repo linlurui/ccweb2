@@ -1,6 +1,6 @@
 package ccait.ccweb.repo;
 
-import ccait.ccweb.annotation.Entity;
+import ccait.ccweb.entites.DefaultEntity;
 import entity.query.Queryable;
 import entity.query.core.DBTransaction;
 import org.slf4j.Logger;
@@ -129,10 +129,5 @@ public class CCRepository {
         dbTransaction = null;
         connection = null;
         hasSession = false;
-    }
-
-
-    @Entity
-    private class DefaultEntity extends Queryable<DefaultEntity> {
     }
 }

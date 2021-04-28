@@ -85,16 +85,16 @@ public class RequestFilter implements WebFilter, Filter {
                 log.error( LOG_PRE_SUFFIX + message, ex );
             }
 
-            res.setHeader("Access-Control-Allow-Origin", "*");
+            res.setHeader("Access-Control-Allow-Origin", ApplicationConfig.getInstance().get("${ccweb.auth.allowOrigin}", "*"));
             res.setHeader("Access-Control-Allow-Credentials", "true");
-            res.setHeader("Access-Control-Allow-Methods", "POST, GET, PATCH, DELETE, PUT");
-            res.setHeader("Access-Control-Max-Age", "3600");
-            res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.setHeader("Access-Control-Allow-Methods",  ApplicationConfig.getInstance().get("${ccweb.auth.allowMethods}", "*"));
+            res.setHeader("Access-Control-Max-Age", ApplicationConfig.getInstance().get("${ccweb.auth.allowMethods}", "3600"));
+            res.setHeader("Access-Control-Allow-Headers", ApplicationConfig.getInstance().get("${ccweb.auth.allowHeaders}", "*"));
+            res.setHeader("Access-Control-Expose-Headers", ApplicationConfig.getInstance().get("${ccweb.auth.exposeHeaders}", "*"));
             res.setContentType("application/json; charset=utf-8");
             res.setCharacterEncoding("UTF-8");
-
-            String begin = ApplicationConfig.getInstance().get("${entity.limitTime.begin}", "");
-            String end = ApplicationConfig.getInstance().get("${entity.limitTime.end}", "");
+            String begin = ApplicationConfig.getInstance().get("${ccweb.limitTime.begin}", "");
+            String end = ApplicationConfig.getInstance().get("${ccweb.limitTime.end}", "");
             if(StringUtils.isNotEmpty(begin) && StringUtils.isNotEmpty(end) && Datetime.isEffectiveDate(begin, end)) {
                 throw new Exception(LangConfig.getInstance().get("is_effective_date"));
             }

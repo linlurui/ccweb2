@@ -27,12 +27,14 @@ import ccait.ccweb.utils.ClassUtils;
 import entity.query.ColumnInfo;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.JsonUtils;
+import org.apache.http.client.HttpResponseException;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -48,34 +50,34 @@ import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
 
 @Component
 @Scope("prototype")
-@Trigger(tablename = "${entity.table.userGroupRole}")
+@Trigger(tablename = "${ccweb.table.userGroupRole}")
 @Order(Ordered.HIGHEST_PRECEDENCE+666)
 public final class UserGroupRoleTableTrigger implements ITrigger {
 
     private static final Logger log = LoggerFactory.getLogger( UserGroupRoleTableTrigger.class );
 
-    @Value("${entity.security.encrypt.AES.publicKey:ccait}")
+    @Value("${ccweb.security.encrypt.AES.publicKey:ccait}")
     private String aesPublicKey;
 
-    @Value("${entity.table.reservedField.userGroupRoleId:userGroupRoleId}")
+    @Value("${ccweb.table.reservedField.userGroupRoleId:userGroupRoleId}")
     private String userGroupRoleIdField;
 
-    @Value("${entity.table.reservedField.groupId:groupId}")
+    @Value("${ccweb.table.reservedField.groupId:groupId}")
     private String groupIdField;
 
-    @Value("${entity.table.reservedField.userPath:userPath}")
+    @Value("${ccweb.table.reservedField.userPath:userPath}")
     private String userPathField;
 
-    @Value("${entity.table.reservedField.userId:userId}")
+    @Value("${ccweb.table.reservedField.userId:userId}")
     private String userIdField;
 
     @PostConstruct
     private void init() {
-        userGroupRoleIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userGroupRoleId}", userGroupRoleIdField);
-        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
-        groupIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.groupId}", groupIdField);
-        userPathField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userPath}", userPathField);
-        userIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userId}", userIdField);
+        userGroupRoleIdField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.userGroupRoleId}", userGroupRoleIdField);
+        aesPublicKey = ApplicationConfig.getInstance().get("${ccweb.security.encrypt.AES.publicKey}", aesPublicKey);
+        groupIdField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.groupId}", groupIdField);
+        userPathField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.userPath}", userPathField);
+        userIdField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.userId}", userIdField);
 
     }
 
@@ -92,7 +94,7 @@ public final class UserGroupRoleTableTrigger implements ITrigger {
 
             UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
             if(user == null) {
-                throw new Exception(LangConfig.getInstance().get("login_please"));
+                throw new HttpResponseException(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("login_please"));
             }
 
             Integer groupId = Integer.parseInt(data.get(groupIdField).toString());

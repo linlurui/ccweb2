@@ -46,6 +46,7 @@ en:
     fail_to_convert_page_number: fail to convert page number
     not_found_upload_config: can not find the upload config
     not_found_file: can not find the file
+    can_not_find_datasource_mapping: can not find %s datasource mapping
 cn:
     can_not_find_the_user_key: 找不到用户密钥
     can_not_delete_self: 不能删除本账号
@@ -94,3 +95,4 @@ cn:
     fail_to_convert_page_number: 转换失败，页码：
     not_found_upload_config: 找不到上传设置
     not_found_file: 找不到文件
+    can_not_find_datasource_mapping: 无法匹配到数据源%s

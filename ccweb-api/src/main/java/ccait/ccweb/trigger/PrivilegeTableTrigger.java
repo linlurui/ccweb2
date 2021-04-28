@@ -37,18 +37,18 @@ import java.util.Map;
 
 @Component
 @Scope("prototype")
-@Trigger(tablename = "${entity.table.privilege}")
+@Trigger(tablename = "${ccweb.table.privilege}")
 @Order(Ordered.HIGHEST_PRECEDENCE+666)
 public final class PrivilegeTableTrigger implements ITrigger {
 
     private static final Logger log = LoggerFactory.getLogger( PrivilegeTableTrigger.class );
 
-    @Value("${entity.table.reservedField.privilegeId:privilegeId}")
+    @Value("${ccweb.table.reservedField.privilegeId:privilegeId}")
     private String privilegeIdField;
 
     @PostConstruct
     private void init() {
-        privilegeIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.privilegeId}", privilegeIdField);
+        privilegeIdField = ApplicationConfig.getInstance().get("${ccweb.table.reservedField.privilegeId}", privilegeIdField);
     }
 
     @Override

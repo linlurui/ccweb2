@@ -22,10 +22,8 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,26 +39,58 @@ public class ApplicationConfigProcessor implements EnvironmentPostProcessor {
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment configurableEnvironment, SpringApplication springApplication) {
-        File file = getApplicationConfig(configurableEnvironment, ".yml");
+        File file = getApplicationConfig(".yml");
         if(file != null  && file.exists()) {
             setPropertys(configurableEnvironment, loadPropertiesByYaml(file));
             return;
         }
 
-        file = getApplicationConfig(configurableEnvironment, ".yaml");
+        file = getApplicationConfig(".yaml");
         if(file != null  && file.exists()) {
             setPropertys(configurableEnvironment, loadPropertiesByYaml(file));
             return;
         }
 
-        file = getApplicationConfig(configurableEnvironment, ".properties");
+        file = getApplicationConfig(".properties");
         if(file != null  && file.exists()) {
             setPropertys(configurableEnvironment, loadProperties(file));
             return;
         }
     }
 
-    public File getApplicationConfig(ConfigurableEnvironment configurableEnvironment, String suffix) {
+    public Properties getApplicationPropertiesByResource() {
+        URL url = this.getClass().getClassLoader().getResource("application.yml");
+        if(url == null) {
+            return null;
+        }
+        String path = url.getPath();
+        File file = new File(path);
+        if(file.exists()) {
+            return this.loadPropertiesByYaml(file);
+        }
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.yml");
+        if(inputStream != null) {
+            return this.loadPropertiesByYaml(inputStream);
+        }
+
+        url = this.getClass().getClassLoader().getResource("application.yaml");
+        if(url == null) {
+            return null;
+        }
+        path = url.getPath();
+        file = new File(path);
+        if(file.exists()) {
+            return this.loadPropertiesByYaml(file);
+        }
+        inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.yaml");
+        if(inputStream != null) {
+            return this.loadPropertiesByYaml(inputStream);
+        }
+
+        return null;
+    }
+
+    public File getApplicationConfig(String suffix) {
         //tomcat路径
         String property = System.getProperty("catalina.home");
         String path =property+ File.separator + "conf" + File.separator+"application" + suffix;
@@ -83,40 +113,45 @@ public class ApplicationConfigProcessor implements EnvironmentPostProcessor {
             return file;
         }
         else {
-            file = new File(System.getProperty("user.dir") + "/conf/application" + suffix);
+            file = new File(System.getProperty("user.dir") + File.separator + "conf"+File.separator+"application" + suffix);
         }
 
         if(file.exists()) {
             return file;
         }
         else {
-            file = new File(System.getProperty("user.dir") + "/config/application" + suffix);
+            file = new File(System.getProperty("user.dir")  + File.separator + "config" + File.separator + "application" + suffix);
         }
 
         if (file.exists()) {
             return file;
         }
         else {
-            file = new File(System.getProperty("user.dir") + "/application" + suffix);
+            file = new File(System.getProperty("user.dir") + File.separator + "application" + suffix);
         }
 
         if(file.exists()) {
             return file;
         }
         else {
-            file = new File(System.getProperty("user.dir") + "/resources/application" + suffix);
+            file = new File(System.getProperty("user.dir") + File.separator + "resources" + File.separator + "application" + suffix);
         }
 
         if(file.exists()) {
             return file;
         }
         else {
-            file = new File(System.getProperty("user.dir") + "/src/main/resources/application" + suffix);
+            file = new File(System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "application" + suffix);
         }
         return file;
     }
 
     private void setPropertys(ConfigurableEnvironment configurableEnvironment, Properties properties) {
+        Properties resource = getApplicationPropertiesByResource();
+        if(resource != null) {
+            properties = this.mergePropertys(resource, properties);
+        }
+
         MutablePropertySources propertySources = configurableEnvironment.getPropertySources();
 
         fillPropertiesFromDatabase(properties);
@@ -127,8 +162,19 @@ public class ApplicationConfigProcessor implements EnvironmentPostProcessor {
         //propertySources.addLast(new PropertiesPropertySource("Config", properties));
     }
 
+    private Properties mergePropertys(Properties srcProperties, Properties targetProperties) {
+        for(Object key : srcProperties.keySet()) {
+            if(!targetProperties.containsKey(key)) {
+                targetProperties.put(key, srcProperties.get(key));
+                ApplicationConfig.getInstance().set(key.toString(), targetProperties.get(key).toString());
+            }
+        }
+
+        return targetProperties;
+    }
+
     private void fillPropertiesFromDatabase(Properties properties) {
-        String configTable = ApplicationConfig.getInstance().get("${entity.app-config.table}", "");
+        String configTable = ApplicationConfig.getInstance().get("${ccweb.app-config.table}", "");
         String applicationName = ApplicationConfig.getInstance().get("${spring.application.name}", "");
 
         if(StringUtils.isEmpty(applicationName) || StringUtils.isEmpty(configTable)) {
@@ -151,8 +197,8 @@ public class ApplicationConfigProcessor implements EnvironmentPostProcessor {
             List<AppConfig> appConfigs = appConfigEntity.where("[service]=#{service}").query();
             for (AppConfig appConfig : appConfigs) {
                 if(appConfig.getKey().startsWith("entity.datasource") ||
-                        "entity.account".equalsIgnoreCase(appConfig.getKey()) ||
-                        "entity.license".equalsIgnoreCase(appConfig.getKey())) {
+                        "ccweb.account".equalsIgnoreCase(appConfig.getKey()) ||
+                        "ccweb.license".equalsIgnoreCase(appConfig.getKey())) {
                     continue;
                 }
                 properties.setProperty(appConfig.getKey(), appConfig.getValue());
@@ -222,12 +268,22 @@ public class ApplicationConfigProcessor implements EnvironmentPostProcessor {
     }
 
     public Properties loadPropertiesByYaml(File file) {
+        try {
+            return this.loadPropertiesByYaml(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            log.error("Can not find the application config ======>>> ", e);
+        }
+
+        return null;
+    }
+
+    public Properties loadPropertiesByYaml(InputStream stream) {
         final String DOT = ".";
         Properties result = new Properties();
         try {
             YAMLFactory yamlFactory = new YAMLFactory();
             YAMLParser parser = yamlFactory.createParser(
-                    new InputStreamReader(new FileInputStream(file), Charset.forName(ENCODING)));
+                    new InputStreamReader(stream, Charset.forName(ENCODING)));
 
             String key = "";
             String value = null;

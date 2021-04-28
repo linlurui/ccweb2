@@ -13,19 +13,30 @@ package ccait.ccweb.websocket;
 
 
 
+import ccait.ccweb.config.LangConfig;
+import ccait.ccweb.context.CCApplicationContext;
+import ccait.ccweb.model.UserModel;
 import entity.tool.util.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 
@@ -34,10 +45,11 @@ import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 public class WebSocketClient extends Endpoint {
     private static final Logger log = LoggerFactory.getLogger(WebSocketClient.class);
 
-    // 获取WebSocket连接器
-    WebSocketContainer container;
     //连接超时
     public static final long MAX_TIME_OUT = 60 * 60 * 24 * 1000;
+
+    @Autowired
+    protected HttpServletRequest request;
 
     @Value("${websocket.server:}")
     private String server;
@@ -49,10 +61,10 @@ public class WebSocketClient extends Endpoint {
     private String protocol;
 
     private String websocket_url;
+    private Session session;
 
     @PostConstruct
     private void init() {
-        container = ContainerProvider.getWebSocketContainer();
         websocket_url = protocol + "://" + server + ":" + port + "/ccws";
     }
 
@@ -66,7 +78,11 @@ public class WebSocketClient extends Endpoint {
             @OnMessage
             @Override
             public void onMessage(String message) {
-                log.debug(LOG_PRE_SUFFIX + "返回信息：" + message);
+                if(LangConfig.getInstance().get("login_please").equals(message)) {
+                    log.warn(message);
+                    return;
+                }
+                log.info(LOG_PRE_SUFFIX + "返回信息：" + message);
             }
         });
     }
@@ -92,9 +108,10 @@ public class WebSocketClient extends Endpoint {
             message = JsonUtils.toJson(data);
         }
 
-        Session session = null;
         try {
-            session = connect(data);
+            if(session == null) {
+                session = connect(data);
+            }
             session.getBasicRemote().sendText(message);// 发送信息
         } catch (Exception e) {
             log.error(LOG_PRE_SUFFIX + String.format("WebSocket(%s)创建连接出错：%s", websocket_url, e.getMessage()), e);
@@ -102,16 +119,26 @@ public class WebSocketClient extends Endpoint {
     }
 
     private <T> Session connect(T data) throws DeploymentException, IOException, URISyntaxException {
-        Session session;
-        ClientEndpointConfig clientEndpointConfig = ClientEndpointConfig.Builder.create().build();
-        clientEndpointConfig.getUserProperties().put("data", data);
 
         if(StringUtils.isEmpty(websocket_url)) {
             throw new IOException("connection has been released!!!");
         }
 
+        ClientEndpointConfig clientEndpointConfig = ClientEndpointConfig.Builder.create().configurator(new ClientEndpointConfig.Configurator() {
+            public void beforeRequest(Map<String, List<String>> headers) {
+                if(null != request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY)){
+                    List<String> value = new ArrayList<>();
+                    value.add(JsonUtils.toJson(request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY)));
+                    // 设置header
+                    headers.put("current_user", value);
+                }
+            }
+        }).build();
+
         // 创建会话
-        session = container.connectToServer(WebSocketClient.class, clientEndpointConfig, new URI(websocket_url));
+        Session session = ContainerProvider.getWebSocketContainer().connectToServer(WebSocketClient.class, clientEndpointConfig, new URI(websocket_url));
+        session.getUserProperties().put(HttpSession.class.getName(), request.getSession());
+
         return session;
     }
 }
