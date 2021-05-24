@@ -19,6 +19,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import javax.annotation.PostConstruct;
 import java.io.FileNotFoundException;
@@ -26,6 +27,7 @@ import java.net.MalformedURLException;
 
 @EnableEurekaClient
 @ServletComponentScan
+@EnableFeignClients(basePackages = {"ccait.ccweb"})
 @SpringBootApplication(scanBasePackages = {"ccait.ccweb"}, exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class} )
 public class Application extends SpringBootServletInitializer {
 

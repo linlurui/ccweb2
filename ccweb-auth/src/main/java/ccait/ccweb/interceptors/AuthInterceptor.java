@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
@@ -140,7 +141,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
             if(!response.isCommitted()) {
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("has_not_privilege"));
             }
-            throw new Exception(LangConfig.getInstance().get("has_not_privilege"));
+            throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, LangConfig.getInstance().get("has_not_privilege"));
         }
         else {
             return true;
@@ -202,6 +203,11 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
                     }
                 }
                 else {
+                    UserModel user = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+                    if(user == null) {
+                        return false;
+                    }
+
                     return true;
                 }
             }
@@ -281,7 +287,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
             if(!response.isCommitted()) {
                 response.sendError(HttpStatus.UNAUTHORIZED.value());
             }
-            return false;
+            throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, LangConfig.getInstance().get("has_not_privilege"));
         }
 
         boolean hasGroup = false;
@@ -324,7 +330,7 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
             if(!response.isCommitted()) {
                 response.sendError(HttpStatus.UNAUTHORIZED.value());
             }
-            return false;
+            throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, LangConfig.getInstance().get("has_not_privilege"));
         }
 
         String privilegeWhere = null;
@@ -422,38 +428,37 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
         List<PrivilegeModel> privilegeList = new ArrayList<PrivilegeModel>();
         if(roleIdList.size() > 0) {
             String roleWhere = String.format("[roleId] in ('%s')", String.join("','", roleIdList));
-            privilegeList = aclList.size() > 0 ? privilege.where(roleWhere).and(privilegeWhere)
-                    .and(String.format("(groupId in ('%s') OR groupId IS NULL OR groupId='')", String.join("','",
-                            groupIds.stream().filter(o->o != null).map(a -> a.toString().replace("-", ""))
-                                    .collect(Collectors.toList()))))
-                    .groupby("roleId", "groupId")
-                    .select("roleId", "groupId", "MAX(scope) as scope")
-                    .query()
-                    : privilege.where(roleWhere).and(privilegeWhere)
-                    .groupby("roleId", "groupId")
-                    .select("roleId", "groupId", "MAX(scope) as scope")
-                    .query();
+            if(aclList.size() > 0) {
+                String groupsString = String.format("(groupId in ('%s') OR groupId IS NULL OR groupId='')", String.join("','",
+                        groupIds.stream().filter(o -> o != null).map(a -> a.toString().replace("-", ""))
+                                .collect(Collectors.toList())));
+                privilegeList = privilege.where(roleWhere).and(privilegeWhere)
+                        .and(groupsString).query();
+            }
+            else {
+                privilegeList = privilege.where(roleWhere).and(privilegeWhere).query();
+            }
         }
 
         else {
-            privilegeList = aclList.size() > 0 ? privilege.where(privilegeWhere)
-                    .and(String.format("(groupId in ('%s') OR groupId IS NULL OR groupId='')", String.join("','",
-                            groupIds.stream().filter(o->o != null).map(a -> a.toString().replace("-", ""))
-                                    .collect(Collectors.toList()))))
-                    .groupby("groupId")
-                    .select("roleId", "groupId", "MAX(scope) as scope")
-                    .query()
-                    : privilege.where(privilegeWhere)
-                    .groupby("groupId")
-                    .select("roleId", "groupId", "MAX(scope) as scope")
-                    .query();
+            if(aclList.size() > 0) {
+                String groupString = String.format("(groupId in ('%s') OR groupId IS NULL OR groupId='')", String.join("','",
+                        groupIds.stream().filter(o->o != null).map(a -> a.toString().replace("-", ""))
+                                .collect(Collectors.toList())));
+
+                privilegeList =  privilege.where(privilegeWhere)
+                        .and(groupString).query();
+            }
+            else {
+                privilegeList = privilege.where(privilegeWhere).query();
+            }
         }
 
         boolean result = false;
         PrivilegeScope currentMaxScope = PrivilegeScope.DENIED;
         for (UserGroupRoleModel groupRole : UserContext.getUserGroupRoleModels(request, user.getUserId())) {
             Optional<PrivilegeModel> opt = privilegeList.stream().filter(a -> a.getRoleId().equals(groupRole.getRoleId()) &&
-                    (a.getGroupId()==null || a.getGroupId().equals(groupRole.getGroupId())))
+                    (a.getGroupId()==null || a.getGroupId().equals(groupRole.getGroupId()))).filter(a->a.getScope() != null)
                     .max(Comparator.comparing(b->b.getScope().getCode()));
 
             if(opt != null && opt.isPresent()) {
@@ -484,22 +489,32 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
                     String username = JWT.decode(token).getClaim("username").asString();
                     UserModel user = new UserModel();
                     user.setUsername(username);
-                    user = user.where("username=#{username}").first();
-                    if (user == null) {
+                    UserModel sessionUser = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+                    if(sessionUser != null && sessionUser.getUsername().equals(user.getUsername())) {
+                        return;
+                    }
+
+                    if (!user.where("username=#{username}").exist()) {
                         throw new RuntimeException("非法用户！");
                     }
+                    user = user.where("username=#{username}").first();
                     Boolean verify = JwtUtils.isVerify(token, user);
                     if (!verify) {
                         throw new RuntimeException("非法访问！");
                     }
 
-                    UserContext.login(user.getUsername(), user.getPassword(), request, response);
-                    response.setHeader("token", token);
+                    if(sessionUser == null || user.getUserId() != sessionUser.getUserId()) {
+                        CCApplicationContext.setSession(request, LOGIN_KEY, user);
+                    }
 
                     return;
-                } catch (JWTDecodeException e) {
+                } catch (Exception e) {
                     log.error(e.getMessage(), e);
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    if(!response.isCommitted()) {
+                        response.sendError(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("has_not_privilege"));
+                    }
+                    throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, LangConfig.getInstance().get("login_please"));
                 }
             }
             else {
@@ -519,10 +534,10 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
 
                 UserModel user = new UserModel();
                 user.setUsername(username);
-                user = user.where("username=#{username}").first();
-                if(user == null) {
-                    throw new RuntimeException("fail to get the token!!!");
+                if (!user.where("username=#{username}").exist()) {
+                    throw new RuntimeException("非法用户！");
                 }
+                user = user.where("username=#{username}").first();
 
                 String userkey = request.getHeader(ApplicationConfig.getInstance().get("${ccweb.auth.userkey}", DEFAULT_USERKEY));
                 String vaildCode2 = EncryptionUtil.md5(EncryptionUtil.encryptByAES(user.getUserId().toString(), userkey + aesPublicKey), "UTF-8");
@@ -530,8 +545,10 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
                     throw new RuntimeException("fail to get the token!!!");
                 }
 
-                UserContext.login(request, user);
-                response.setHeader("token", token);
+                UserModel sessionUser = CCApplicationContext.getSession(request, LOGIN_KEY, UserModel.class);
+                if(sessionUser == null || user.getUserId() != sessionUser.getUserId()) {
+                    UserContext.login(request, user);
+                }
 
                 return;
             }
@@ -539,6 +556,10 @@ public class AuthInterceptor extends AbstractPermissionInterceptor implements Ha
             catch (Exception e) {
                 log.error(e.getMessage(), e);
                 response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                if(!response.isCommitted()) {
+                    response.sendError(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("has_not_privilege"));
+                }
+                throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, LangConfig.getInstance().get("login_please"));
             }
         }
     }

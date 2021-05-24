@@ -3,6 +3,8 @@ package ccait.ccweb.logging;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.Layout;
 import ch.qos.logback.core.status.ErrorStatus;
+import entity.query.core.ApplicationConfig;
+import entity.tool.util.StringUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -36,6 +38,12 @@ public class KafkaAppender<E> extends AppenderBase<E> {
         final Properties properties = new Properties();
         try {
             properties.load(new StringReader(producerProperties));
+            if(StringUtils.isNotEmpty(ApplicationConfig.getInstance().get("${logging.kafka.broker}", ""))) {
+                properties.put("bootstrap.servers", ApplicationConfig.getInstance().get("${logging.kafka.broker}", properties.getProperty("bootstrap.servers")));
+            }
+            else  if(StringUtils.isNotEmpty(ApplicationConfig.getInstance().get("${spring.kafka.bootstrap-servers}", ""))) {
+                properties.put("bootstrap.servers", ApplicationConfig.getInstance().get("${spring.kafka.bootstrap-servers}", properties.getProperty("bootstrap.servers")));
+            }
             producer = new KafkaProducer<>(properties);
         } catch (Exception exception) {
             System.out.println("KafkaAppender: Exception initializing Producer. " + exception + " : " + exception.getMessage());
@@ -44,6 +52,8 @@ public class KafkaAppender<E> extends AppenderBase<E> {
         if (topic == null) {
             System.out.println("KafkaAppender requires a topic. Add this to the appender configuration.");
         } else {
+            topic = topic.replace("kafka_env_IS_UNDEFINED", ApplicationConfig.getInstance().get("${logging.kafka.env}", ""));
+            topic = topic.replace("spring_application_name_IS_UNDEFINED", ApplicationConfig.getInstance().get("${spring.application.name}", ""));
             System.out.println("KafkaAppender will publish messages to the '" + topic + "' topic.");
         }
         LOGGER.info("producerProperties = {}", producerProperties);

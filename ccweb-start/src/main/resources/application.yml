@@ -145,6 +145,12 @@ ccweb:
   page: #分页配置选项
     maxSize: 50 #分页最大记录数默认值
   defaultDateByNow: false
+  jobs:
+    cron: 0/1 * * * * ?
+    server: http://localhost:8000
+    user:
+      username: admin
+      userkey: 0eff056027ad8746b9ca081f3db7416f
   auth:
     user:
       jwt:

@@ -22,45 +22,39 @@ public class CCRepository {
     @Autowired
     private ApplicationContext applicationContext;
 
-    private volatile Hashtable<Class, Queryable> sessionMap = new Hashtable<>();
     private Connection connection;
     private DBTransaction dbTransaction;
     private boolean hasSession = false;
+    private Queryable queryable;
 
     public CCRepository create() {
         return new CCRepository();
     }
 
-    public void openSession() {
-        openSession(DefaultEntity.class);
-    }
-
-    public <T> void openSession(Class<T> clazz) {
+    public synchronized void openSession() {
         try {
+            if(hasSession && !connection.isClosed() && !connection.getAutoCommit()) {
+                return;
+            }
             releaseSession();
             hasSession = true;
-            Queryable<T> queryable = (Queryable<T>) get(clazz);
+            queryable = new DefaultEntity();
             dbTransaction = queryable.dataSource().beginTransaction();
             connection = queryable.getConnection();
-            updateSession(clazz, queryable);
-            if(!DefaultEntity.class.equals(clazz)) {
-                if(!sessionMap.containsKey(DefaultEntity.class)) {
-                    sessionMap.put(DefaultEntity.class, new DefaultEntity());
-                }
-                sessionMap.get(DefaultEntity.class).setConnection(connection);
-            }
         } catch (SQLException | ClassNotFoundException throwables) {
             log.error("Database Transaction Error=====>>> ", throwables);
         }
     }
 
-    public <T> T get(T obj) {
+    public <T extends Queryable> T get(T obj) {
         if(!hasSession) {
             return obj;
         }
 
         if(obj instanceof Queryable) {
-            updateSession(obj.getClass(), (Queryable<T>) obj);
+            Queryable<T> queryable = (Queryable<T>) obj;
+            queryable.setConnection(connection);
+            queryable.setTransaction(dbTransaction);
         }
         return obj;
     }
@@ -70,18 +64,14 @@ public class CCRepository {
             return  (T) applicationContext.getBean(clazz);
         }
 
-        if(sessionMap!=null && sessionMap.containsKey(clazz)) {
-            return (T) sessionMap.get(clazz);
-        }
-
         Queryable<T> queryable = (Queryable<T>) applicationContext.getBean(clazz);
-
-        updateSession(clazz, queryable);
+        queryable.setConnection(connection);
+        queryable.setTransaction(dbTransaction);
 
         return (T) queryable;
     }
 
-    public <T> Connection getConnection(Class<T> clazz) {
+    public <T extends Queryable> Connection getConnection(Class<T> clazz) {
         if(connection != null) {
             return connection;
         }
@@ -89,7 +79,7 @@ public class CCRepository {
         return ((Queryable<T>) get(clazz)).getConnection();
     }
 
-    public <T> DBTransaction getDBTransaction(Class<T> clazz) {
+    public <T extends Queryable> DBTransaction getDBTransaction(Class<T> clazz) {
         if(dbTransaction != null) {
             return dbTransaction;
         }
@@ -99,8 +89,8 @@ public class CCRepository {
 
     public void rollback() {
         hasSession = false;
-        if(sessionMap.size() > 0 && sessionMap.containsKey(DefaultEntity.class)) {
-            sessionMap.get(DefaultEntity.class).dataSource().rollback();
+        if(queryable != null) {
+            queryable.dataSource().rollback();
         }
 
         releaseSession();
@@ -108,26 +98,17 @@ public class CCRepository {
 
     public void commit() {
         hasSession = false;
-        if(sessionMap.size() > 0 && sessionMap.containsKey(DefaultEntity.class)) {
-            sessionMap.get(DefaultEntity.class).dataSource().commit();
+        if(queryable != null) {
+            queryable.dataSource().commit();
         }
 
         releaseSession();
     }
 
-    private synchronized <T> void updateSession(Class<?> clazz, Queryable<T> queryable) {
-        if(connection == null) {
-            connection = queryable.getConnection();
-            dbTransaction = queryable.getTransaction();
-        }
-        queryable.setConnection(connection);
-        sessionMap.put(clazz, queryable);
-    }
-
     private synchronized void releaseSession() {
-        sessionMap.clear();
         dbTransaction = null;
         connection = null;
+        queryable = null;
         hasSession = false;
     }
 }

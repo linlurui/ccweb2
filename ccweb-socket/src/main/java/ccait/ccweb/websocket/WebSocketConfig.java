@@ -12,17 +12,24 @@ package ccait.ccweb.websocket;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.*;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
+import org.springframework.web.util.WebAppRootListener;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import java.util.EventListener;
 
 @EnableWebSocket
 @Configuration
 @EnableAutoConfiguration
 //@EnableWebSocketMessageBroker
 @ConditionalOnProperty(prefix = "websocket", name = "enable", havingValue = "true")
-public class WebSocketConfig /*extends AbstractSessionWebSocketMessageBrokerConfigurer*/ {
+public class WebSocketConfig /*extends AbstractSessionWebSocketMessageBrokerConfigurer*/ implements ServletContextInitializer {
 
     @Bean
     public ServerEndpointExporter serverEndpointExporter() {
@@ -50,8 +57,23 @@ public class WebSocketConfig /*extends AbstractSessionWebSocketMessageBrokerConf
 //        registry.enableSimpleBroker("/topic","/queue");
 //    }
 
-//    @Override
+    //    @Override
 //    public void configureClientInboundChannel(ChannelRegistration registration) {
 //        super.configureClientInboundChannel(registration);
 //    }
+    @Bean
+    public ServletServerContainerFactoryBean createWebSocketContainer() {
+        ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+        // ws 传输数据的时候，数据过大有时候会接收不到，所以在此处设置bufferSize
+        container.setMaxTextMessageBufferSize(1024000);
+        container.setMaxBinaryMessageBufferSize(1024000);
+        container.setMaxSessionIdleTimeout(15 * 60000L);
+        return container;
+    }
+
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        servletContext.addListener(WebAppRootListener.class);
+        servletContext.setInitParameter("org.apache.tomcat.websocket.textBufferSize","1024000");
+    }
 }

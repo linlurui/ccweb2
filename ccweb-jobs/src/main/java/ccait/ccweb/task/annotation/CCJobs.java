@@ -9,4 +9,9 @@ import java.lang.annotation.*;
 public @interface CCJobs {
     String id() default "";
     String cron() default "";
+    String[] args() default {};
+    String threadPoolName() default "";
+    int maxThreads() default 15;
+    int maxJobs() default 0;
+    boolean ask() default false;
 }

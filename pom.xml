@@ -59,7 +59,7 @@
         </repository>
         <repository>
             <id>ccweb2</id>
-            <url>https://gitee.com/ccait/ccweb2/raw/core</url>
+            <url>https://gitee.com/ccait/ccweb2/raw/2.0</url>
             <releases>
                 <updatePolicy>always</updatePolicy>
                 <enabled>true</enabled>

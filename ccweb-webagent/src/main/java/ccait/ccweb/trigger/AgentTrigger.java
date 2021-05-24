@@ -14,16 +14,13 @@ import ccait.ccweb.RestAgent;
 import ccait.ccweb.annotation.*;
 import ccait.ccweb.context.CCApplicationContext;
 import ccait.ccweb.context.CCEntityContext;
-import ccait.ccweb.entites.ConditionInfo;
 import ccait.ccweb.entites.PlatformInfo;
 import ccait.ccweb.entites.QueryInfo;
-import ccait.ccweb.controllers.AgentController;
-import ccait.ccweb.enums.Algorithm;
+import ccait.ccweb.controllers.WebAgentController;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.model.UserGroupRoleModel;
 import ccait.ccweb.model.UserModel;
 import ccait.ccweb.utils.StaticVars;
-import ccait.ccweb.model.PageInfo;
 import entity.query.Datetime;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.JsonUtils;
@@ -81,7 +78,7 @@ public class AgentTrigger {
     private boolean hasAgentNode = false;
 
     @Autowired
-    private AgentController agentController;
+    private WebAgentController webAgentController;
 
     @PostConstruct
     private void init() {
@@ -155,7 +152,7 @@ public class AgentTrigger {
                     }
                     returnData = JsonUtils.convert(result, Map.class);
 
-                    Object id = agentController.insert(table, result);
+                    Object id = webAgentController.insert(table, result);
 
                     if(userTable.equals(table)) {
                         UserGroupRoleModel userGroupRole = new UserGroupRoleModel();
@@ -251,7 +248,7 @@ public class AgentTrigger {
             }
 
             try {
-                Map data = agentController.getDataByPrimaryKey(id, rest);
+                Map data = webAgentController.getDataByPrimaryKey(id, rest);
                 if(data!=null && data.containsKey("id")) {
                     setRequiredValues(id, rest, data);
                 }
@@ -273,7 +270,7 @@ public class AgentTrigger {
                 if(platformInfo.isEnsureTable()) {
                     CCApplicationContext.ensureColumns(result);
                 }
-                agentController.update(table, data.get("id").toString(), result);
+                webAgentController.update(table, data.get("id").toString(), result);
                 success(responseList, returnData);
             }
 
@@ -331,7 +328,7 @@ public class AgentTrigger {
             }
 
             try {
-                Map data = agentController.getDataByPrimaryKey(id, rest);
+                Map data = webAgentController.getDataByPrimaryKey(id, rest);
                 if(data!=null && data.containsKey("id")) {
                     setRequiredValues(id, rest, data);
                 }
@@ -340,13 +337,13 @@ public class AgentTrigger {
                 Map result = rest.invoke(postData);
                 if(userTable.equals(table)) {
                     String userId = data.get(userIdField).toString();
-                    agentController.delete(table, userId);
+                    webAgentController.delete(table, userId);
                     UserGroupRoleModel userGroupRole = new UserGroupRoleModel();
                     userGroupRole.setUserId(Integer.parseInt(userId));
                     userGroupRole.where(String.format("%s=#{userId}", userIdField)).delete();
                 }
                 else {
-                    agentController.delete(table, data.get("id").toString());
+                    webAgentController.delete(table, data.get("id").toString());
                 }
                 success(responseList, result);
             }
@@ -526,8 +523,8 @@ public class AgentTrigger {
 
     private void end(List<ResponseData> responseList) throws IOException {
         if (responseList.size() > 0) {
-            agentController.write(responseList);
-            agentController.end();
+            webAgentController.write(responseList);
+            webAgentController.end();
         }
     }
 

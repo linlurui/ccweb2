@@ -1,7 +1,9 @@
 package ccait.ccweb.processor;
 
+import ccait.ccweb.client.AppConfigClient;
 import ccait.ccweb.context.CCApplicationContext;
 import ccait.ccweb.entites.AppConfig;
+import ccait.ccweb.service.AppConfigService;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
@@ -12,6 +14,7 @@ import entity.query.core.DataSource;
 import entity.tool.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -25,9 +28,9 @@ import javax.annotation.Resource;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 @Resource
@@ -154,7 +157,14 @@ public class ApplicationConfigProcessor implements EnvironmentPostProcessor {
 
         MutablePropertySources propertySources = configurableEnvironment.getPropertySources();
 
-        fillPropertiesFromDatabase(properties);
+        String configTable = ApplicationConfig.getInstance().get("${ccweb.app-config.table}", "");
+        try {
+            fillPropertiesFromDatabase(configTable, properties);
+        }
+        catch (Exception e) {
+            System.out.println(String.format("读取配置数据表%s发生异常: %s", configTable, e.toString()));
+            log.error(String.format("读取配置数据表%s发生异常", configTable), e);
+        }
 
         //以外部配置文件为准
         propertySources.addFirst(new PropertiesPropertySource("Config", properties));
@@ -173,40 +183,41 @@ public class ApplicationConfigProcessor implements EnvironmentPostProcessor {
         return targetProperties;
     }
 
-    private void fillPropertiesFromDatabase(Properties properties) {
-        String configTable = ApplicationConfig.getInstance().get("${ccweb.app-config.table}", "");
+    private void fillPropertiesFromDatabase(String configTable, Properties properties) throws Exception {
+
         String applicationName = ApplicationConfig.getInstance().get("${spring.application.name}", "");
 
-        if(StringUtils.isEmpty(applicationName) || StringUtils.isEmpty(configTable)) {
+        if (StringUtils.isEmpty(applicationName) || StringUtils.isEmpty(configTable)) {
             return;
         }
 
-        try {
-            log.info(String.format("Fill properties from database table [%s] for %s...", configTable, applicationName));
-            ensureConfigTable(configTable);
-            AppConfig appConfigEntity = new AppConfig();
-            appConfigEntity.setService(applicationName);
-            for(Object key : properties.keySet()) {
-                appConfigEntity.setKey(key.toString());
-                appConfigEntity.setValue(properties.getProperty(key.toString()));
-                if(!appConfigEntity.where("[service]=#{service}").and("[key]=#{key}").exist()) {
-                    appConfigEntity.insert();
-                }
+        log.info(String.format("Fill properties from database table [%s] for %s...", configTable, applicationName));
+        ensureConfigTable(configTable);
+        List<AppConfig> appConfigs = getAppConfigList(properties, applicationName);
+        for (AppConfig appConfig : appConfigs) {
+            if (appConfig.getKey().startsWith("entity.datasource") ||
+                    "ccweb.account".equalsIgnoreCase(appConfig.getKey()) ||
+                    "ccweb.license".equalsIgnoreCase(appConfig.getKey())) {
+                continue;
             }
-
-            List<AppConfig> appConfigs = appConfigEntity.where("[service]=#{service}").query();
-            for (AppConfig appConfig : appConfigs) {
-                if(appConfig.getKey().startsWith("entity.datasource") ||
-                        "ccweb.account".equalsIgnoreCase(appConfig.getKey()) ||
-                        "ccweb.license".equalsIgnoreCase(appConfig.getKey())) {
-                    continue;
-                }
-                properties.setProperty(appConfig.getKey(), appConfig.getValue());
-                ApplicationConfig.getInstance().set(appConfig.getKey(), appConfig.getValue());
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
+            properties.setProperty(appConfig.getKey(), appConfig.getValue());
+            ApplicationConfig.getInstance().set(appConfig.getKey(), appConfig.getValue());
         }
+    }
+
+    private List<AppConfig> getAppConfigList(Properties properties, String applicationName) throws SQLException {
+        AppConfig appConfigEntity = new AppConfig();
+        appConfigEntity.setService(applicationName);
+        for(Object key : properties.keySet()) {
+            appConfigEntity.setKey(key.toString());
+            appConfigEntity.setValue(properties.getProperty(key.toString()));
+            if(!appConfigEntity.where("[service]=#{service}").and("[key]=#{key}").exist()) {
+                appConfigEntity.insert();
+            }
+        }
+
+        List<AppConfig> appConfigs = appConfigEntity.where("[service]=#{service}").query();
+        return appConfigs;
     }
 
     private void ensureConfigTable(String configTable) throws Exception {

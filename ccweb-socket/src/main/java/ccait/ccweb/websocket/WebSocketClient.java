@@ -97,8 +97,7 @@ public class WebSocketClient extends Endpoint {
         log.warn(LOG_PRE_SUFFIX + "Websocket连接已关闭......");
     }
 
-    public <T> void send(T data) {
-
+    public synchronized <T> void send(T data) {
         String message = "";
         if(data instanceof String) {
             message = data.toString();
@@ -138,6 +137,8 @@ public class WebSocketClient extends Endpoint {
         // 创建会话
         Session session = ContainerProvider.getWebSocketContainer().connectToServer(WebSocketClient.class, clientEndpointConfig, new URI(websocket_url));
         session.getUserProperties().put(HttpSession.class.getName(), request.getSession());
+        session.setMaxBinaryMessageBufferSize(1024000);
+        session.setMaxTextMessageBufferSize(1024000);
 
         return session;
     }
